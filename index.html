@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Group Finder — Wireframes</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f4f0;
+    --bg-tertiary: #eeede9;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6a64;
+    --border-light: rgba(0,0,0,0.12);
+    --border-mid: rgba(0,0,0,0.22);
+    --border-strong: rgba(0,0,0,0.32);
+    --accent: #378ADD;
+    --accent-bg: #E6F1FB;
+    --accent-text: #0C447C;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1e1e1c;
+      --bg-secondary: #272724;
+      --bg-tertiary: #2e2e2b;
+      --text-primary: #e8e7e1;
+      --text-secondary: #9a9890;
+      --border-light: rgba(255,255,255,0.1);
+      --border-mid: rgba(255,255,255,0.18);
+      --border-strong: rgba(255,255,255,0.28);
+      --accent: #5ba3e8;
+      --accent-bg: #0c2a44;
+      --accent-text: #8dc4f4;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  .page-header {
+    max-width: 960px; margin: 0 auto 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .page-title { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+  .page-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  .project-tag {
+    font-size: 12px; padding: 4px 12px; border-radius: 20px;
+    background: var(--accent-bg); color: var(--accent-text); font-weight: 500;
+  }
+
+  .wf-root {
+    max-width: 960px; margin: 0 auto;
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border-mid);
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+
+  /* Tab nav */
+  .tab-bar {
+    display: flex; gap: 4px; padding: 12px 16px 0;
+    border-bottom: 0.5px solid var(--border-light);
+    background: var(--bg-secondary);
+  }
+  .tab-btn {
+    padding: 8px 16px; font-size: 13px; font-weight: 500;
+    border: 0.5px solid transparent; border-bottom: none;
+    border-radius: 6px 6px 0 0; cursor: pointer;
+    background: transparent; color: var(--text-secondary);
+    transition: all .15s; font-family: inherit;
+  }
+  .tab-btn.active {
+    background: var(--bg-primary);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+    margin-bottom: -0.5px;
+  }
+  .tab-btn:hover:not(.active) { color: var(--text-primary); }
+
+  .wf-frame { background: var(--bg-primary); display: none; }
+  .wf-frame.visible { display: block; }
+
+  /* Browser chrome */
+  .browser-bar {
+    display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+    background: var(--bg-secondary); border-bottom: 0.5px solid var(--border-light);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot-r { background: #E24B4A; } .dot-y { background: #EF9F27; } .dot-g { background: #639922; }
+  .url-bar {
+    flex: 1; height: 26px; border-radius: 6px;
+    background: var(--bg-tertiary); border: 0.5px solid var(--border-light);
+    padding: 0 10px; font-size: 12px; color: var(--text-secondary);
+    display: flex; align-items: center;
+  }
+
+  /* App nav */
+  .app-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 32px; border-bottom: 0.5px solid var(--border-light);
+  }
+  .nav-logo { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-link { font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+  .nav-link.active { color: var(--text-primary); font-weight: 500; }
+  .nav-actions { display: flex; gap: 8px; }
+  .btn-outline {
+    padding: 6px 14px; font-size: 13px; border-radius: 6px;
+    border: 0.5px solid var(--border-mid); background: transparent;
+    color: var(--text-primary); cursor: pointer; font-family: inherit;
+  }
+  .btn-solid {
+    padding: 6px 14px; font-size: 13px; border-radius: 6px;
+    border: none; background: var(--accent); color: #fff;
+    cursor: pointer; font-family: inherit;
+  }
+
+  /* Annotation */
+  .annotation { position: relative; display: inline-block; border: 1.5px dashed #EF9F27; border-radius: 4px; }
+  .ann-label {
+    position: absolute; top: -20px; left: 0;
+    font-size: 10px; color: #BA7517; font-weight: 600;
+    background: var(--bg-primary); padding: 1px 4px; border-radius: 3px; white-space: nowrap;
+  }
+
+  /* ── PAGE 1: HOME ── */
+  .hero {
+    background: var(--bg-secondary); padding: 48px 32px 40px;
+    text-align: center; border-bottom: 0.5px solid var(--border-light);
+  }
+  .hero-badge {
+    display: inline-block; margin-bottom: 14px; padding: 4px 12px;
+    border-radius: 20px; background: var(--accent-bg); color: var(--accent-text);
+    font-size: 11px; font-weight: 600;
+  }
+  .hero-h1 { font-size: 26px; font-weight: 600; margin-bottom: 10px; }
+  .hero-sub { font-size: 14px; color: var(--text-secondary); max-width: 420px; margin: 0 auto 24px; line-height: 1.6; }
+  .hero-cta { display: flex; gap: 10px; justify-content: center; margin-bottom: 28px; }
+  .search-bar {
+    display: flex; gap: 8px; max-width: 460px; margin: 0 auto;
+    padding: 8px; background: var(--bg-primary);
+    border: 0.5px solid var(--border-strong); border-radius: 10px;
+  }
+  .search-input {
+    flex: 1; height: 34px; border-radius: 6px;
+    background: var(--bg-secondary); border: 0.5px solid var(--border-light);
+    padding: 0 10px; font-size: 13px; color: var(--text-secondary);
+    display: flex; align-items: center;
+  }
+  .stats-row {
+    display: flex; justify-content: center; gap: 32px; padding: 20px 32px;
+    border-bottom: 0.5px solid var(--border-light);
+  }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 22px; font-weight: 600; }
+  .stat-lbl { font-size: 12px; color: var(--text-secondary); }
+  .section-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px 12px; }
+  .section-title { font-size: 15px; font-weight: 600; }
+  .see-all { font-size: 12px; color: var(--accent); cursor: pointer; }
+  .card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0 32px 24px; }
+  .group-card {
+    border: 0.5px solid var(--border-light); border-radius: var(--radius-md);
+    padding: 14px; background: var(--bg-primary); cursor: pointer; transition: border-color .15s;
+  }
+  .group-card:hover { border-color: var(--border-strong); }
+  .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .course-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; background: var(--accent-bg); color: var(--accent-text); }
+  .member-count { font-size: 11px; color: var(--text-secondary); }
+  .card-name { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .card-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 0.5px solid var(--border-light); }
+  .avatar-stack { display: flex; }
+  .avatar { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--bg-primary); margin-right: -6px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; }
+  .av1 { background: var(--accent-bg); color: var(--accent-text); }
+  .av2 { background: #E1F5EE; color: #085041; }
+  .av3 { background: #FAEEDA; color: #633806; }
+  .av4 { background: #EAF3DE; color: #27500A; }
+  .av5 { background: #FAECE7; color: #712B13; }
+  .join-btn { font-size: 11px; padding: 4px 10px; border-radius: 4px; border: 0.5px solid var(--border-mid); background: transparent; color: var(--text-primary); cursor: pointer; font-family: inherit; }
+
+  /* ── PAGE 2: GROUP LIST ── */
+  .list-header { padding: 20px 32px 0; }
+  .list-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .list-sub { font-size: 13px; color: var(--text-secondary); }
+  .filter-row { display: flex; gap: 8px; padding: 16px 32px; border-bottom: 0.5px solid var(--border-light); flex-wrap: wrap; align-items: center; }
+  .filter-chip { padding: 5px 12px; border-radius: 20px; font-size: 12px; border: 0.5px solid var(--border-mid); background: transparent; color: var(--text-secondary); cursor: pointer; font-family: inherit; }
+  .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .filter-select { margin-left: auto; padding: 5px 10px; border-radius: 6px; font-size: 12px; border: 0.5px solid var(--border-mid); background: var(--bg-secondary); color: var(--text-secondary); font-family: inherit; }
+  .list-layout { display: flex; }
+  .list-sidebar { width: 220px; flex-shrink: 0; padding: 16px; border-right: 0.5px solid var(--border-light); }
+  .sidebar-section { margin-bottom: 20px; }
+  .sidebar-title { font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
+  .sidebar-item { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; cursor: pointer; }
+  .sidebar-label { font-size: 13px; color: var(--text-secondary); }
+  .sidebar-count { font-size: 11px; color: var(--text-secondary); background: var(--bg-secondary); padding: 1px 6px; border-radius: 10px; }
+  .list-main { flex: 1; padding: 16px; }
+  .list-row { display: flex; align-items: center; gap: 14px; padding: 14px; border: 0.5px solid var(--border-light); border-radius: var(--radius-md); margin-bottom: 8px; cursor: pointer; transition: border-color .15s; }
+  .list-row:hover { border-color: var(--border-strong); }
+  .list-icon { width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--bg-secondary); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .list-info { flex: 1; }
+  .list-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .list-meta { font-size: 12px; color: var(--text-secondary); }
+  .list-tags { display: flex; gap: 4px; margin-top: 4px; }
+  .tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; background: var(--accent-bg); color: var(--accent-text); }
+  .tag-g { font-size: 10px; padding: 2px 6px; border-radius: 3px; background: #E1F5EE; color: #085041; }
+  .list-right { text-align: right; flex-shrink: 0; }
+  .list-members { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+
+  /* ── PAGE 3: GROUP PAGE ── */
+  .group-hero { padding: 24px 32px 20px; border-bottom: 0.5px solid var(--border-light); background: var(--bg-secondary); }
+  .group-hero-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .group-course { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+  .group-name { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .group-desc-line { font-size: 13px; color: var(--text-secondary); }
+  .group-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .group-meta-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .meta-pill { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+  .meta-dot { width: 6px; height: 6px; border-radius: 50%; background: #639922; display: inline-block; }
+  .group-body { display: flex; }
+  .group-main { flex: 1; padding: 20px 24px; border-right: 0.5px solid var(--border-light); }
+  .group-sidebar { width: 240px; padding: 20px 16px; }
+  .tab-row { display: flex; gap: 2px; margin-bottom: 16px; border-bottom: 0.5px solid var(--border-light); }
+  .inner-tab { padding: 7px 14px; font-size: 13px; cursor: pointer; color: var(--text-secondary); border-bottom: 2px solid transparent; margin-bottom: -0.5px; }
+  .inner-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .comment-composer { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border-light); }
+  .av-sm { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .composer-box { flex: 1; background: var(--bg-secondary); border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 10px 12px; }
+  .composer-placeholder { font-size: 13px; color: var(--text-secondary); }
+  .composer-footer { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .comment-item { display: flex; gap: 10px; margin-bottom: 14px; }
+  .comment-body { flex: 1; }
+  .comment-author { font-size: 12px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .comment-time { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+  .comment-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .gs-block { margin-bottom: 16px; }
+  .gs-label { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+  .member-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 0.5px solid var(--border-light); }
+  .member-name { font-size: 13px; flex: 1; }
+  .member-role { font-size: 11px; color: var(--accent-text); background: var(--accent-bg); padding: 1px 6px; border-radius: 3px; }
+  .detail-row { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+  .detail-val { color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Study Group Finder — UI Wireframes</div>
+    <div class="page-sub">COMP-401 Software Engineering Project · Frontend Wireframes</div>
+  </div>
+  <div class="project-tag">3 Pages</div>
+</div>
+
+<div class="wf-root">
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showPage('home',this)">① Home Page</button>
+    <button class="tab-btn" onclick="showPage('list',this)">② Study Group List</button>
+    <button class="tab-btn" onclick="showPage('group',this)">③ Group Page</button>
+  </div>
+
+  <!-- ═══ PAGE 1: HOME ═══ -->
+  <div class="wf-frame visible" id="pg-home">
+    <div class="browser-bar">
+      <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+      <div class="url-bar">studygroup.app / home</div>
+    </div>
+    <div class="app-nav">
+      <div class="nav-logo"><span>Study</span>Group</div>
+      <div class="nav-links">
+        <span class="nav-link active">Home</span>
+        <span class="nav-link">Browse Groups</span>
+        <span class="nav-link">My Groups</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-outline">Log in</button>
+        <button class="btn-solid">Sign up</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-badge">For university students</div>
+      <div class="hero-h1">Find your study group</div>
+      <div class="hero-sub">Connect with peers, join study groups for your courses, and collaborate more effectively.</div>
+      <div class="hero-cta">
+        <button class="btn-solid">Browse Groups</button>
+        <button class="btn-outline">Create a Group</button>
+      </div>
+      <div class="annotation" style="max-width:460px;margin:0 auto;">
+        <div class="ann-label">Search bar</div>
+        <div class="search-bar">
+          <div class="search-input">Search by course name or code…</div>
+          <button class="btn-solid" style="padding:6px 12px;font-size:12px;">Search</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-num">240</div><div class="stat-lbl">Active Groups</div></div>
+      <div class="stat-item"><div class="stat-num">1,400+</div><div class="stat-lbl">Students</div></div>
+      <div class="stat-item"><div class="stat-num">60</div><div class="stat-lbl">Courses</div></div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Featured Groups</div>
+      <div class="see-all">See all →</div>
+    </div>
+
+    <div class="annotation" style="margin:0 32px 24px;">
+      <div class="ann-label">Group cards</div>
+      <div class="card-grid">
+        <div class="group-card">
+          <div class="card-top"><span class="course-badge">COMP-401</span><span class="member-count">5 / 8</span></div>
+          <div class="card-name">SE Study Circle</div>
+          <div class="card-desc">Weekly sessions on system design and software lifecycle topics.</div>
+          <div class="card-footer">
+            <div class="avatar-stack">
+              <div class="avatar av1">NC</div><div class="avatar av2">TS</div><div class="avatar av3">HK</div>
+            </div>
+            <button class="join-btn">Join</button>
+          </div>
+        </div>
+        <div class="group-card">
+          <div class="card-top"><span class="course-badge">MATH-202</span><span class="member-count">3 / 6</span></div>
+          <div class="card-name">Calculus II Group</div>
+          <div class="card-desc">Problem-solving sessions focused on integrals and series.</div>
+          <div class="card-footer">
+            <div class="avatar-stack">
+              <div class="avatar av2">AM</div><div class="avatar av3">BS</div>
+            </div>
+            <button class="join-btn">Join</button>
+          </div>
+        </div>
+        <div class="group-card">
+          <div class="card-top"><span class="course-badge">CS-301</span><span class="member-count">6 / 10</span></div>
+          <div class="card-name">Algorithms Together</div>
+          <div class="card-desc">Practice leetcode and review algorithmic complexity weekly.</div>
+          <div class="card-footer">
+            <div class="avatar-stack">
+              <div class="avatar av5">IB</div><div class="avatar av2">KA</div><div class="avatar av3">AC</div>
+            </div>
+            <button class="join-btn">Join</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE 2: GROUP LIST ═══ -->
+  <div class="wf-frame" id="pg-list">
+    <div class="browser-bar">
+      <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+      <div class="url-bar">studygroup.app / groups</div>
+    </div>
+    <div class="app-nav">
+      <div class="nav-logo"><span>Study</span>Group</div>
+      <div class="nav-links">
+        <span class="nav-link">Home</span>
+        <span class="nav-link active">Browse Groups</span>
+        <span class="nav-link">My Groups</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-outline">Log in</button>
+        <button class="btn-solid">+ Create Group</button>
+      </div>
+    </div>
+
+    <div class="list-header">
+      <div class="list-title">Study Groups</div>
+      <div class="list-sub">Browse all available groups or filter by course</div>
+    </div>
+
+    <div class="filter-row">
+      <button class="filter-chip active">All</button>
+      <button class="filter-chip">Computer Science</button>
+      <button class="filter-chip">Mathematics</button>
+      <button class="filter-chip">Engineering</button>
+      <button class="filter-chip">Physics</button>
+      <select class="filter-select">
+        <option>Sort: Newest</option>
+        <option>Most members</option>
+        <option>Open spots</option>
+      </select>
+    </div>
+
+    <div class="list-layout">
+      <div class="list-sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Department</div>
+          <div class="sidebar-item"><span class="sidebar-label">Computer Science</span><span class="sidebar-count">18</span></div>
+          <div class="sidebar-item"><span class="sidebar-label">Mathematics</span><span class="sidebar-count">12</span></div>
+          <div class="sidebar-item"><span class="sidebar-label">Engineering</span><span class="sidebar-count">9</span></div>
+          <div class="sidebar-item"><span class="sidebar-label">Physics</span><span class="sidebar-count">7</span></div>
+          <div class="sidebar-item"><span class="sidebar-label">Other</span><span class="sidebar-count">14</span></div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-title">Availability</div>
+          <div class="sidebar-item"><span class="sidebar-label">Open spots</span><span class="sidebar-count">32</span></div>
+          <div class="sidebar-item"><span class="sidebar-label">Full groups</span><span class="sidebar-count">28</span></div>
+        </div>
+      </div>
+
+      <div class="list-main">
+        <div class="list-row">
+          <div class="list-icon">📐</div>
+          <div class="list-info">
+            <div class="list-name">SE Study Circle</div>
+            <div class="list-meta">COMP-401 · Software Engineering</div>
+            <div class="list-tags"><span class="tag">System Design</span><span class="tag">Agile</span></div>
+          </div>
+          <div class="list-right">
+            <div class="list-members">5 / 8 members</div>
+            <button class="join-btn">Join</button>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="list-icon">∑</div>
+          <div class="list-info">
+            <div class="list-name">Calculus II Group</div>
+            <div class="list-meta">MATH-202 · Mathematics</div>
+            <div class="list-tags"><span class="tag">Integrals</span><span class="tag-g">Series</span></div>
+          </div>
+          <div class="list-right">
+            <div class="list-members">3 / 6 members</div>
+            <button class="join-btn">Join</button>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="list-icon">⚙</div>
+          <div class="list-info">
+            <div class="list-name">Algorithms Together</div>
+            <div class="list-meta">CS-301 · Computer Science</div>
+            <div class="list-tags"><span class="tag">Complexity</span><span class="tag-g">Graphs</span></div>
+          </div>
+          <div class="list-right">
+            <div class="list-members">6 / 10 members</div>
+            <button class="join-btn">Join</button>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="list-icon">⚛</div>
+          <div class="list-info">
+            <div class="list-name">Quantum Physics Prep</div>
+            <div class="list-meta">PHYS-305 · Physics</div>
+            <div class="list-tags"><span class="tag">Exam Prep</span></div>
+          </div>
+          <div class="list-right">
+            <div class="list-members">2 / 5 members</div>
+            <button class="join-btn">Join</button>
+          </div>
+        </div>
+        <div class="list-row" style="opacity:.5;">
+          <div class="list-icon">🗄</div>
+          <div class="list-info">
+            <div class="list-name">Database Systems</div>
+            <div class="list-meta">CS-410 · Computer Science</div>
+            <div class="list-tags"><span class="tag">SQL</span><span class="tag-g">NoSQL</span></div>
+          </div>
+          <div class="list-right">
+            <div class="list-members">8 / 8 · Full</div>
+            <button class="join-btn" disabled style="opacity:.4;cursor:default;">Full</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE 3: GROUP PAGE ═══ -->
+  <div class="wf-frame" id="pg-group">
+    <div class="browser-bar">
+      <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+      <div class="url-bar">studygroup.app / groups / se-study-circle</div>
+    </div>
+    <div class="app-nav">
+      <div class="nav-logo"><span>Study</span>Group</div>
+      <div class="nav-links">
+        <span class="nav-link">Home</span>
+        <span class="nav-link active">Browse Groups</span>
+        <span class="nav-link">My Groups</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-outline">Log in</button>
+        <button class="btn-solid">+ Create Group</button>
+      </div>
+    </div>
+
+    <div class="group-hero">
+      <div class="group-hero-top">
+        <div class="group-title-block">
+          <div class="group-course">COMP-401 · Software Engineering</div>
+          <div class="group-name">SE Study Circle</div>
+          <div class="group-desc-line">Weekly sessions on system design and software lifecycle topics.</div>
+        </div>
+        <div class="group-actions">
+          <button class="btn-outline">Share</button>
+          <button class="btn-solid">Join Group</button>
+        </div>
+      </div>
+      <div class="group-meta-row">
+        <span class="meta-pill"><span class="meta-dot"></span> 5 / 8 members</span>
+        <span class="meta-pill">Created by Nedim Can Huray</span>
+        <span class="meta-pill">Meets Tuesdays 18:00</span>
+        <span class="meta-pill">Open to join</span>
+      </div>
+    </div>
+
+    <div class="group-body">
+      <div class="group-main">
+        <div class="tab-row">
+          <div class="inner-tab active">Discussion</div>
+          <div class="inner-tab">Schedule</div>
+          <div class="inner-tab">Resources</div>
+        </div>
+
+        <div class="annotation">
+          <div class="ann-label">Comment composer</div>
+          <div class="comment-composer">
+            <div class="av-sm av1">You</div>
+            <div style="flex:1;">
+              <div class="composer-box"><div class="composer-placeholder">Write a message to the group…</div></div>
+              <div class="composer-footer"><button class="btn-solid" style="font-size:12px;padding:5px 12px;">Post</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comment-item">
+          <div class="av-sm av2">TS</div>
+          <div class="comment-body">
+            <div class="comment-author">Timur Sharapov <span class="comment-time">2 hours ago</span></div>
+            <div class="comment-text">Hey everyone! I've uploaded the lecture notes for week 4. Can we go over the UML diagrams on Tuesday?</div>
+          </div>
+        </div>
+        <div class="comment-item">
+          <div class="av-sm av3">HK</div>
+          <div class="comment-body">
+            <div class="comment-author">Hussein Khadra <span class="comment-time">1 hour ago</span></div>
+            <div class="comment-text">That works for me. I also have some questions on the ER diagram assignment due Friday.</div>
+          </div>
+        </div>
+        <div class="comment-item">
+          <div class="av-sm av5">IB</div>
+          <div class="comment-body">
+            <div class="comment-author">Illia Borysov <span class="comment-time">45 min ago</span></div>
+            <div class="comment-text">+1 on both. Should we meet in the library study room or online this week?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group-sidebar">
+        <div class="gs-block">
+          <div class="gs-label">Members (5)</div>
+          <div class="member-item">
+            <div class="av-sm av1">NC</div>
+            <div class="member-name">Nedim Can Huray</div>
+            <div class="member-role">Owner</div>
+          </div>
+          <div class="member-item">
+            <div class="av-sm av2">TS</div>
+            <div class="member-name">Timur Sharapov</div>
+          </div>
+          <div class="member-item">
+            <div class="av-sm av3">HK</div>
+            <div class="member-name">Hussein Khadra</div>
+          </div>
+          <div class="member-item">
+            <div class="av-sm av5">IB</div>
+            <div class="member-name">Illia Borysov</div>
+          </div>
+          <div class="member-item">
+            <div class="av-sm av4">KA</div>
+            <div class="member-name">Kumru Alagur</div>
+          </div>
+        </div>
+
+        <div class="gs-block">
+          <div class="gs-label">Group details</div>
+          <div class="detail-row">Course: <span class="detail-val">COMP-401</span></div>
+          <div class="detail-row">Schedule: <span class="detail-val">Tuesdays 18:00</span></div>
+          <div class="detail-row">Capacity: <span class="detail-val">5 / 8</span></div>
+          <div class="detail-row">Status: <span style="color:#639922;font-weight:600;">Open</span></div>
+        </div>
+
+        <button class="btn-solid" style="width:100%;margin-top:4px;font-size:13px;padding:9px;">Join this group</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPage(name, btn) {
+  document.querySelectorAll('.wf-frame').forEach(f => f.classList.remove('visible'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pg-' + name).classList.add('visible');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
