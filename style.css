@@ -1,0 +1,664 @@
+:root {
+  --bg: #f6f6f7;
+  --surface: #ffffff;
+  --text: #141414;
+  --muted: #787878;
+  --line: #e8e8e8;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 14px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 26px auto 48px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.topbar {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  box-shadow: var(--shadow);
+  gap: 18px;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.nav-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px;
+  gap: 6px;
+}
+
+.nav-link {
+  padding: 10px 22px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.nav-link.active {
+  background: #fff;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.host-btn {
+  background: #0f0f10;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.host-btn:hover {
+  opacity: 0.92;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #0f0f10;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* =========================
+   HOME PAGE
+========================= */
+
+.hero {
+  margin-top: 44px;
+}
+
+.hero h1 {
+  font-size: clamp(34px, 5vw, 56px);
+  line-height: 1.05;
+  margin-bottom: 10px;
+  letter-spacing: -0.03em;
+}
+
+.hero p {
+  color: var(--muted);
+  font-size: 18px;
+  margin-bottom: 18px;
+}
+
+.hero-divider {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin-top: 6px;
+}
+
+.filters {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 26px 0 18px;
+}
+
+.filter-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.filter-btn.active {
+  background: #efeff1;
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.session-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.session-card-link .session-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.session-card-link:hover .session-card {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.session-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 330px;
+}
+
+.session-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  background: #f7f7f8;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8a8a8a;
+}
+
+.time {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.session-title {
+  font-size: 22px;
+  line-height: 1.15;
+  margin-bottom: 14px;
+  letter-spacing: -0.02em;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 15px;
+  margin-bottom: 14px;
+}
+
+.description {
+  color: var(--muted);
+  font-size: 15px;
+  margin-bottom: 28px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.card-divider {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+  margin-bottom: 16px;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.avatars {
+  display: flex;
+  align-items: center;
+}
+
+.mini-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border: 2px solid #fff;
+  margin-left: -8px;
+}
+
+.mini-avatar:first-child {
+  margin-left: 0;
+}
+
+.spots {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* =========================
+   SESSION DETAILS PAGE
+========================= */
+
+.session-details-page {
+  margin-top: 18px;
+}
+
+.back-link {
+  display: inline-block;
+  margin: 28px 0 20px;
+  color: #6f6f6f;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.back-link:hover {
+  color: #111;
+}
+
+.session-hero-card,
+.session-section {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.session-hero-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.session-main-info {
+  flex: 1 1 500px;
+}
+
+.session-main-info h1 {
+  font-size: clamp(30px, 5vw, 54px);
+  line-height: 1.08;
+  margin: 18px 0 14px;
+  letter-spacing: -0.03em;
+}
+
+.session-meta {
+  color: #787878;
+  font-size: 18px;
+}
+
+.session-side-box {
+  width: 220px;
+  min-height: 190px;
+  border: 1px solid #ececec;
+  border-radius: 18px;
+  background: #f7f7f8;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.session-side-box h2 {
+  font-size: 42px;
+  margin-bottom: 8px;
+}
+
+.session-side-box p {
+  color: #787878;
+  margin-bottom: 20px;
+}
+
+.rsvp-btn {
+  width: 100%;
+  border: none;
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  padding: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.rsvp-btn:hover {
+  opacity: 0.92;
+}
+
+.session-section {
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.session-section h2 {
+  margin-bottom: 14px;
+  font-size: 30px;
+}
+
+.session-section p {
+  color: #787878;
+  font-size: 17px;
+}
+
+.session-bottom-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.message-box {
+  min-height: 180px;
+  border: 1px solid #ececec;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #8a8a8a;
+  margin-bottom: 18px;
+  text-align: center;
+  padding: 20px;
+}
+
+.message-form {
+  display: flex;
+  gap: 12px;
+}
+
+.message-form input {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+  outline: none;
+}
+
+.message-form input:focus {
+  border-color: #bbb;
+}
+
+.message-form button {
+  border: none;
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  padding: 14px 22px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.message-form button:hover {
+  opacity: 0.92;
+}
+
+.attendees-box .attendee-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.attendee-item strong {
+  display: block;
+  font-size: 16px;
+}
+
+.attendee-item p {
+  font-size: 14px;
+  color: #8a8a8a;
+}
+
+/* =========================
+   LOCATION ICON
+========================= */
+
+.location-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.location-icon::before {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #9c9c9c;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  top: 0;
+  left: 2px;
+}
+
+.location-icon::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #9c9c9c;
+  border-radius: 50%;
+  top: 5px;
+  left: 6px;
+}
+
+/* =========================
+   AVATAR COLORS
+========================= */
+
+.blue {
+  background: #4a7cff;
+}
+
+.green {
+  background: #25b36a;
+}
+
+.yellow {
+  background: #d4a100;
+}
+
+.purple {
+  background: #8a5cff;
+}
+
+.red {
+  background: #f05454;
+}
+
+.pink {
+  background: #e548a6;
+}
+
+.teal {
+  background: #27b4b8;
+}
+
+.gray {
+  background: #8c8c8c;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 980px) {
+  .sessions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .brand {
+    width: 100%;
+    text-align: center;
+  }
+
+  .session-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .container {
+    width: min(100% - 20px, 100%);
+    margin-top: 16px;
+  }
+
+  .topbar {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .nav-center {
+    width: 100%;
+  }
+
+  .nav-link {
+    flex: 1;
+    text-align: center;
+    padding: 10px 12px;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .host-btn {
+    flex: 1;
+  }
+
+  .hero {
+    margin-top: 28px;
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  .filters {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .sessions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .session-card {
+    min-height: auto;
+  }
+
+  .session-title {
+    font-size: 28px;
+  }
+
+  .session-hero-card {
+    padding: 20px;
+  }
+
+  .session-section {
+    padding: 20px;
+  }
+
+  .session-side-box {
+    width: 100%;
+  }
+
+  .message-form {
+    flex-direction: column;
+  }
+
+  .message-form button {
+    width: 100%;
+  }
+
+  .session-section h2 {
+    font-size: 24px;
+  }
+
+  .session-meta {
+    font-size: 16px;
+  }
+}
