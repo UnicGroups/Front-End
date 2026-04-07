@@ -5,6 +5,10 @@
   const STORAGE_KEY = 'sn_users_v1';
   const CURRENT_KEY = 'sn_current_user_v1';
   const PASSWORD_FILENAME = 'password';
+  let currentUser = null;
+  let menuEl = null;
+  let modalEl = null;
+  let usersCache = [];
 
   const defaultUsers = [
     { email: 'admin', name: 'admin', password: 'password' }
@@ -66,6 +70,7 @@
   }
 
   function setCurrentUser(user) {
+    currentUser = user;
     localStorage.setItem(CURRENT_KEY, JSON.stringify(user));
     updateAvatar(user);
   }
@@ -74,6 +79,50 @@
     const raw = localStorage.getItem(CURRENT_KEY);
     if (!raw) return null;
     try { return JSON.parse(raw); } catch { return null; }
+  }
+
+  function toggleMenu(anchor) {
+    if (!menuEl) return;
+    const open = menuEl.classList.contains('open');
+    if (open) {
+      menuEl.classList.remove('open');
+      return;
+    }
+    const rect = anchor.getBoundingClientRect();
+    menuEl.style.top = `${rect.bottom + 8}px`;
+    menuEl.style.left = `${Math.max(rect.right - 220, 12)}px`;
+    menuEl.classList.add('open');
+  }
+
+  function closeMenu() {
+    if (menuEl) menuEl.classList.remove('open');
+  }
+
+  function attachMenu(user) {
+    if (menuEl) {
+      menuEl.querySelector('[data-name]').textContent = user.name;
+      menuEl.querySelector('[data-email]').textContent = user.email;
+      return;
+    }
+    menuEl = document.createElement('div');
+    menuEl.className = 'auth-menu';
+    menuEl.innerHTML = `
+      <h4 data-name></h4>
+      <small data-email></small>
+      <button type="button">Profile</button>
+      <button type="button">Settings</button>
+      <button type="button" class="logout">Log out</button>
+    `;
+    document.body.appendChild(menuEl);
+    menuEl.querySelector('.logout').addEventListener('click', () => {
+      localStorage.removeItem(CURRENT_KEY);
+      currentUser = null;
+      updateAvatar(null);
+      closeMenu();
+      if (modalEl) openModal(modalEl, 'login');
+    });
+    // other buttons are inert per requirements
+    menuEl.addEventListener('click', (e) => e.stopPropagation());
   }
 
   function updateAvatar(user) {
@@ -156,6 +205,7 @@
         users.push(user);
         saveUsers(users);
         setCurrentUser(user);
+        attachMenu(user);
         closeModal(overlay);
         return;
       }
@@ -167,6 +217,7 @@
         return;
       }
       setCurrentUser(found);
+      attachMenu(found);
       closeModal(overlay);
     });
 
@@ -176,15 +227,32 @@
 
   async function initAuth() {
     const users = await loadUsers();
+    usersCache = users;
     const { modal } = initModal(users);
+    modalEl = modal;
     const current = getCurrentUser();
+    currentUser = current;
     updateAvatar(current);
+    if (current) attachMenu(current);
 
     const avatarBtn = document.querySelector('.avatar');
     if (avatarBtn) {
-      avatarBtn.addEventListener('click', () => openModal(modal, 'login'));
-      avatarBtn.addEventListener('keypress', (e) => { if (e.key === 'Enter') openModal(modal, 'login'); });
+      avatarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (currentUser) {
+          toggleMenu(avatarBtn);
+        } else {
+          openModal(modal, 'login');
+        }
+      });
+      avatarBtn.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          if (currentUser) toggleMenu(avatarBtn); else openModal(modal, 'login');
+        }
+      });
     }
+
+    document.addEventListener('click', closeMenu);
   }
 
   // auto-run after DOM is ready

@@ -129,6 +129,56 @@ img {
 }
 
 /* =========================
+   AUTH MENU (logged-in)
+========================= */
+
+.auth-menu {
+  position: fixed;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.14);
+  padding: 10px;
+  z-index: 1100;
+  display: none;
+}
+
+.auth-menu.open {
+  display: block;
+}
+
+.auth-menu h4 {
+  margin: 4px 0 10px;
+  font-size: 14px;
+}
+
+.auth-menu small {
+  color: var(--muted);
+  display: block;
+  margin-top: -6px;
+}
+
+.auth-menu button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 10px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.auth-menu button:hover {
+  background: #f4f4f5;
+}
+
+.auth-menu .logout {
+  color: #d14343;
+}
+
+/* =========================
    HOME PAGE
 ========================= */
 
