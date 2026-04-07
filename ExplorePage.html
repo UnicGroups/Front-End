@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Nomad - Explore Map</title>
+
+    <!-- Leaflet — free, open source, zero API key needed -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+      #map {
+        width: 100%;
+        height: 100%;
+        min-height: 560px;
+        border-radius: var(--radius-md);
+      }
+
+      .leaflet-popup-content-wrapper {
+        border-radius: 14px !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.10) !important;
+        border: 1px solid #e8e8e8;
+        padding: 0 !important;
+      }
+      .leaflet-popup-content { margin: 0 !important; }
+      .leaflet-popup-tip-container { display: none; }
+
+      .popup-inner { padding: 14px 16px; min-width: 200px; }
+      .popup-tag {
+        display: inline-block;
+        padding: 3px 8px;
+        background: #f7f7f8;
+        border: 1px solid #e8e8e8;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #8a8a8a;
+        margin-bottom: 8px;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .popup-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #141414;
+        margin-bottom: 6px;
+        line-height: 1.3;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .popup-meta {
+        font-size: 12px;
+        color: #787878;
+        margin-bottom: 10px;
+        line-height: 1.5;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .popup-btn {
+        display: block;
+        width: 100%;
+        background: #0f0f10;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        font-family: Arial, Helvetica, sans-serif;
+        box-sizing: border-box;
+      }
+      .popup-btn:hover { opacity: 0.85; color: #fff; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <a href="HomePage.html" class="brand">Study Nomad</a>
+
+        <nav class="nav-center">
+          <a class="nav-link" href="HomePage.html">Feed</a>
+          <a class="nav-link active" href="ExplorePage.html">Explore Map</a>
+        </nav>
+
+        <div class="topbar-actions">
+          <button class="host-btn">+ Host a Session</button>
+          <div class="avatar">S</div>
+        </div>
+      </header>
+
+      <section class="hero">
+        <h1>Explore Map</h1>
+        <p>Find study sessions happening near you.</p>
+        <hr class="hero-divider" />
+      </section>
+
+      <div class="explore-layout">
+
+        <aside class="explore-sidebar">
+          <div class="explore-search">
+            <input type="text" id="search-input" placeholder="Search by course or location…" oninput="filterSidebar(this.value)" />
+          </div>
+          <div class="explore-list" id="explore-list"></div>
+        </aside>
+
+        <div class="explore-map-area" style="padding:0;">
+          <div id="map"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      var sessions = [
+        {
+          id: 1,
+          tag: 'COMP 401',
+          title: 'COMP 401 Midterm Review Hackathon',
+          location: 'UNIC Main Library, Makedonitissis Ave',
+          time: 'Tomorrow, 5:00 PM',
+          lat: 35.16325,
+          lng: 33.31396,
+          color: '#4a7cff'
+        },
+        {
+          id: 2,
+          tag: 'COMP 328',
+          title: 'UI/UX Figma Collaboration',
+          location: 'Student Union Cafe, Engomi',
+          time: 'Thursday, 2:00 PM',
+          lat: 35.1598,
+          lng: 33.3268,
+          color: '#e548a6'
+        },
+        {
+          id: 3,
+          tag: 'COMP 413',
+          title: 'Database Normalization Study Group',
+          location: 'Engineering Building, UNIC Campus',
+          time: 'Saturday, 10:00 AM',
+          lat: 35.1551,
+          lng: 33.3092,
+          color: '#25b36a'
+        }
+      ];
+
+      // Build sidebar list
+      function buildSidebar(list) {
+        var el = document.getElementById('explore-list');
+        el.innerHTML = '';
+        if (list.length === 0) {
+          el.innerHTML = '<div style="padding:20px;color:#787878;font-size:14px;text-align:center;">No sessions found.</div>';
+          return;
+        }
+        list.forEach(function(s) {
+          var a = document.createElement('a');
+          a.className = 'explore-item';
+          a.href = 'SessionDetail.html?id=' + s.id;
+          a.innerHTML =
+            '<div class="explore-item-top">' +
+              '<div class="explore-item-title">' + s.title + '</div>' +
+              '<span class="explore-item-tag">' + s.tag + '</span>' +
+            '</div>' +
+            '<div class="explore-item-meta">' +
+              '<span class="location-icon"></span>' +
+              s.location + ' · ' + s.time +
+            '</div>';
+          el.appendChild(a);
+        });
+      }
+      buildSidebar(sessions);
+
+      function filterSidebar(query) {
+        var q = query.toLowerCase();
+        buildSidebar(sessions.filter(function(s) {
+          return s.title.toLowerCase().indexOf(q) > -1 ||
+                 s.tag.toLowerCase().indexOf(q) > -1 ||
+                 s.location.toLowerCase().indexOf(q) > -1;
+        }));
+      }
+
+      // Init map centred between all three pins
+      var map = L.map('map', { zoomControl: true }).setView([35.159, 33.318], 15);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(map);
+
+      // Custom teardrop SVG icon
+      function makeIcon(color) {
+        var svg =
+          '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40">' +
+            '<path d="M15 0C6.716 0 0 6.716 0 15c0 9.375 15 25 15 25S30 24.375 30 15C30 6.716 23.284 0 15 0z" fill="' + color + '"/>' +
+            '<circle cx="15" cy="15" r="6" fill="white"/>' +
+          '</svg>';
+        return L.divIcon({
+          html: svg,
+          className: '',
+          iconSize: [30, 40],
+          iconAnchor: [15, 40],
+          popupAnchor: [0, -42]
+        });
+      }
+
+      // Add a marker for each session
+      sessions.forEach(function(s) {
+        var marker = L.marker([s.lat, s.lng], { icon: makeIcon(s.color) }).addTo(map);
+        marker.bindPopup(
+          '<div class="popup-inner">' +
+            '<span class="popup-tag">' + s.tag + '</span>' +
+            '<div class="popup-title">' + s.title + '</div>' +
+            '<div class="popup-meta">' + s.location + '<br>' + s.time + '</div>' +
+            '<a class="popup-btn" href="SessionDetail.html?id=' + s.id + '">View Session &rarr;</a>' +
+          '</div>',
+          { maxWidth: 240 }
+        );
+      });
+    </script>
+  </body>
+</html>

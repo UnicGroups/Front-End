@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Nomad - Session Detail</title>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <a href="HomePage.html" class="brand">Study Nomad</a>
+
+      <nav class="nav-center">
+        <a class="nav-link active" href="HomePage.html">Feed</a>
+        <a class="nav-link" href="ExplorePage.html">Explore Map</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <button class="host-btn">+ Host a Session</button>
+        <div class="avatar">S</div>
+      </div>
+    </header>
+
+    <div class="session-details-page">
+      <a class="back-link" href="HomePage.html">← Back to Feed</a>
+
+      <div class="session-hero-card">
+        <div class="session-main-info">
+          <span class="tag" id="d-tag"></span>
+          <h1 id="d-title"></h1>
+          <div class="session-meta">
+            <div id="d-time"></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+              <span class="location-icon"></span>
+              <span id="d-location"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="session-side-box">
+          <h2 id="d-spots"></h2>
+          <p id="d-spots-label"></p>
+          <button class="rsvp-btn" id="rsvp-btn">RSVP Now</button>
+        </div>
+      </div>
+
+      <div class="session-section">
+        <h2>About this session</h2>
+        <p id="d-about"></p>
+      </div>
+
+      <div class="session-bottom-grid">
+        <div class="session-section">
+          <h2>Discussion</h2>
+          <div class="message-box" id="msg-box">No messages yet — be the first to say something!</div>
+          <div class="message-form">
+            <input type="text" id="msg-input" placeholder="Say something to the group…" />
+            <button onclick="sendMsg()">Send</button>
+          </div>
+        </div>
+
+        <div class="session-section attendees-box" id="attendees-box">
+          <h2 id="d-attendees-heading"></h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var sessions = {
+      1: {
+        tag: 'COMP 401',
+        time: 'Tomorrow, 5:00 PM',
+        title: 'COMP 401 Midterm Review Hackathon',
+        location: 'Main University Library, 3rd Floor',
+        spots: 2,
+        total: 6,
+        about: 'We are going to power through the last 3 years of past exams together. Bring snacks, printed notes, and your laptop. We will split into smaller groups for each topic and reconvene to go over tricky questions. Everyone is welcome — even if you feel behind, this is exactly the session for you.',
+        attendees: [
+          { initials: 'N', color: 'blue',   name: 'Nedim C.',   role: 'Host' },
+          { initials: 'T', color: 'green',  name: 'Timur S.',   role: 'Attendee' },
+          { initials: 'H', color: 'yellow', name: 'Hussein K.', role: 'Attendee' },
+          { initials: 'K', color: 'purple', name: 'Kumru A.',   role: 'Attendee' }
+        ]
+      },
+      2: {
+        tag: 'COMP 328',
+        time: 'Thursday, 2:00 PM',
+        title: 'UI/UX Figma Collaboration',
+        location: 'Student Union Cafe (Near the window)',
+        spots: 2,
+        total: 4,
+        about: 'Working on our final project design system in Figma. We need someone comfortable with auto-layout and component variants. We will also be reviewing user-flow diagrams and finalising the colour palette. Figma access required — reach out if you need an invite to the team file.',
+        attendees: [
+          { initials: 'A', color: 'red',  name: 'Aisha M.',  role: 'Host' },
+          { initials: 'I', color: 'pink', name: 'Illia B.',  role: 'Attendee' }
+        ]
+      },
+      3: {
+        tag: 'COMP 413',
+        time: 'Saturday, 10:00 AM',
+        title: 'Database Normalization Study Group',
+        location: 'Engineering Building, Room 104',
+        spots: 3,
+        total: 8,
+        about: 'Going over BCNF and 3NF reductions with worked examples on the whiteboard. We will tackle past exam questions and build intuition for spotting functional dependencies quickly. Whiteboard markers provided — just bring yourself and a willingness to get things wrong a few times before getting them right.',
+        attendees: [
+          { initials: 'H',  color: 'yellow', name: 'Hussein K.', role: 'Host' },
+          { initials: 'A',  color: 'blue',   name: 'Aisha M.',   role: 'Attendee' },
+          { initials: 'S',  color: 'teal',   name: 'Sara L.',    role: 'Attendee' },
+          { initials: 'M',  color: 'pink',   name: 'Mia T.',     role: 'Attendee' },
+          { initials: '+1', color: 'gray',   name: '1 more',     role: 'Attendee' }
+        ]
+      }
+    };
+
+    var id = parseInt(new URLSearchParams(window.location.search).get('id')) || 1;
+    var s = sessions[id] || sessions[1];
+
+    document.title = 'Study Nomad - ' + s.title;
+    document.getElementById('d-tag').textContent = s.tag;
+    document.getElementById('d-title').textContent = s.title;
+    document.getElementById('d-time').textContent = s.time;
+    document.getElementById('d-location').textContent = s.location;
+    document.getElementById('d-spots').textContent = s.spots;
+    document.getElementById('d-spots-label').textContent = 'spots left out of ' + s.total;
+    document.getElementById('d-about').textContent = s.about;
+    document.getElementById('d-attendees-heading').textContent = 'Attendees (' + (s.total - s.spots) + ')';
+
+    var box = document.getElementById('attendees-box');
+    s.attendees.forEach(function(a) {
+      var item = document.createElement('div');
+      item.className = 'attendee-item';
+      item.innerHTML =
+        '<div class="mini-avatar ' + a.color + '" style="width:38px;height:38px;font-size:13px;flex-shrink:0;">' + a.initials + '</div>' +
+        '<div><strong>' + a.name + '</strong><p>' + a.role + '</p></div>';
+      box.appendChild(item);
+    });
+
+    document.getElementById('rsvp-btn').addEventListener('click', function() {
+      this.textContent = "You're in! 🎉";
+      this.style.opacity = '0.7';
+      this.disabled = true;
+    });
+
+    function sendMsg() {
+      var input = document.getElementById('msg-input');
+      if (!input.value.trim()) return;
+      var msgBox = document.getElementById('msg-box');
+      msgBox.style.display = 'block';
+      msgBox.textContent = 'You: ' + input.value;
+      msgBox.style.color = '#141414';
+      msgBox.style.fontSize = '15px';
+      input.value = '';
+    }
+  </script>
+</body>
+</html>
