@@ -11,7 +11,8 @@
   ];
 
   function serialize(users) {
-    return users.map(u => `${u.email}\n${u.name}\n${u.password}`).join('\n');
+    // blank line between user blocks
+    return users.map(u => `${u.email}\n${u.name}\n${u.password}`).join('\n\n');
   }
 
   function parse(text) {
