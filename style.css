@@ -125,6 +125,7 @@ img {
   font-size: 15px;
   font-weight: 700;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 /* =========================
@@ -553,6 +554,107 @@ img {
 
 .gray {
   background: #8c8c8c;
+}
+
+/* =========================
+   AUTH MODAL
+========================= */
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 18px;
+}
+
+.auth-overlay.open {
+  display: flex;
+}
+
+.auth-modal {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.16);
+  width: min(420px, 100%);
+  padding: 22px;
+  position: relative;
+  display: grid;
+  gap: 12px;
+}
+
+.auth-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.auth-tab {
+  border: 1px solid var(--line);
+  background: #fafafa;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.auth-overlay[data-mode="login"] .auth-tab[data-tab="login"],
+.auth-overlay[data-mode="signup"] .auth-tab[data-tab="signup"] {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.auth-field {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.auth-field input {
+  width: 100%;
+  border: 1px solid #d7d7d7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+
+.auth-primary {
+  border: none;
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-error {
+  color: #d14343;
+  min-height: 18px;
+  font-size: 13px;
+}
+
+.auth-note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 /* =========================
