@@ -14,11 +14,12 @@
       <nav class="nav-center">
         <a class="nav-link active" href="HomePage.html">Feed</a>
         <a class="nav-link" href="ExplorePage.html">Explore Map</a>
+        <a class="nav-link" href="MyGroupsPage.html" id="nav-mygroups">My Groups</a>
       </nav>
 
       <div class="topbar-actions">
         <button class="host-btn">+ Host a Session</button>
-        <div class="avatar" role="button" tabindex="0">S</div>
+        <div class="avatar">S</div>
       </div>
     </header>
 
@@ -41,7 +42,7 @@
         <div class="session-side-box">
           <h2 id="d-spots"></h2>
           <p id="d-spots-label"></p>
-          <button class="rsvp-btn" id="rsvp-btn">RSVP Now</button>
+          <button class="rsvp-btn" id="join-btn"></button>
         </div>
       </div>
 
@@ -67,14 +68,13 @@
     </div>
   </div>
 
-  <script src="auth.js"></script>
   <script>
     var sessions = {
       1: {
         tag: 'COMP 401',
         time: 'Tomorrow, 5:00 PM',
         title: 'COMP 401 Midterm Review Hackathon',
-        location: 'Main University Library, 3rd Floor',
+        location: 'UNIC Main Library, 3rd Floor',
         spots: 2,
         total: 6,
         about: 'We are going to power through the last 3 years of past exams together. Bring snacks, printed notes, and your laptop. We will split into smaller groups for each topic and reconvene to go over tricky questions. Everyone is welcome — even if you feel behind, this is exactly the session for you.',
@@ -119,42 +119,125 @@
     var id = parseInt(new URLSearchParams(window.location.search).get('id')) || 1;
     var s = sessions[id] || sessions[1];
 
+    // ── localStorage helpers ──
+    function getJoined() {
+      return JSON.parse(localStorage.getItem('joinedGroups') || '[]');
+    }
+    function saveJoined(arr) {
+      localStorage.setItem('joinedGroups', JSON.stringify(arr));
+    }
+    function isJoined() {
+      return getJoined().indexOf(id) > -1;
+    }
+
+    // ── Compute current spots (adjusted if user has joined) ──
+    var currentSpots = isJoined() ? s.spots - 1 : s.spots;
+    var currentAttendees = isJoined() ? (s.total - s.spots + 1) : (s.total - s.spots);
+
+    // ── Render static content ──
     document.title = 'Study Nomad - ' + s.title;
-    document.getElementById('d-tag').textContent = s.tag;
-    document.getElementById('d-title').textContent = s.title;
-    document.getElementById('d-time').textContent = s.time;
-    document.getElementById('d-location').textContent = s.location;
-    document.getElementById('d-spots').textContent = s.spots;
-    document.getElementById('d-spots-label').textContent = 'spots left out of ' + s.total;
-    document.getElementById('d-about').textContent = s.about;
-    document.getElementById('d-attendees-heading').textContent = 'Attendees (' + (s.total - s.spots) + ')';
+    document.getElementById('d-tag').textContent        = s.tag;
+    document.getElementById('d-title').textContent      = s.title;
+    document.getElementById('d-time').textContent       = s.time;
+    document.getElementById('d-location').textContent   = s.location;
+    document.getElementById('d-about').textContent      = s.about;
 
+    // ── Render spots ──
+    function renderSpots() {
+      document.getElementById('d-spots').textContent      = currentSpots;
+      document.getElementById('d-spots-label').textContent = 'spots left out of ' + s.total;
+      document.getElementById('d-attendees-heading').textContent = 'Attendees (' + currentAttendees + ')';
+    }
+    renderSpots();
+
+    // ── Render attendees ──
     var box = document.getElementById('attendees-box');
-    s.attendees.forEach(function(a) {
-      var item = document.createElement('div');
-      item.className = 'attendee-item';
-      item.innerHTML =
-        '<div class="mini-avatar ' + a.color + '" style="width:38px;height:38px;font-size:13px;flex-shrink:0;">' + a.initials + '</div>' +
-        '<div><strong>' + a.name + '</strong><p>' + a.role + '</p></div>';
-      box.appendChild(item);
+    function renderAttendees() {
+      // Clear existing attendee items (keep the heading)
+      var existing = box.querySelectorAll('.attendee-item');
+      existing.forEach(function(el) { el.remove(); });
+
+      s.attendees.forEach(function(a) {
+        var item = document.createElement('div');
+        item.className = 'attendee-item';
+        item.innerHTML =
+          '<div class="mini-avatar ' + a.color + '" style="width:38px;height:38px;font-size:13px;flex-shrink:0;">' + a.initials + '</div>' +
+          '<div><strong>' + a.name + '</strong><p>' + a.role + '</p></div>';
+        box.appendChild(item);
+      });
+
+      // If user joined, add "You" at the bottom
+      if (isJoined()) {
+        var you = document.createElement('div');
+        you.className = 'attendee-item';
+        you.id = 'you-attendee';
+        you.innerHTML =
+          '<div class="mini-avatar teal" style="width:38px;height:38px;font-size:13px;flex-shrink:0;">S</div>' +
+          '<div><strong>You (S)</strong><p>Attendee</p></div>';
+        box.appendChild(you);
+      }
+    }
+    renderAttendees();
+
+    // ── Join / Leave button ──
+    var btn = document.getElementById('join-btn');
+
+    function renderBtn() {
+      if (isJoined()) {
+        btn.textContent = 'Leave Group';
+        btn.classList.add('joined');
+      } else {
+        btn.textContent = currentSpots <= 0 ? 'Session Full' : 'Join Group';
+        btn.classList.remove('joined');
+        btn.disabled = currentSpots <= 0;
+      }
+    }
+    renderBtn();
+
+    btn.addEventListener('click', function() {
+      var joined = getJoined();
+      if (isJoined()) {
+        // Leave
+        joined = joined.filter(function(x) { return x !== id; });
+        saveJoined(joined);
+        currentSpots++;
+        currentAttendees--;
+      } else {
+        // Join
+        if (currentSpots <= 0) return;
+        joined.push(id);
+        saveJoined(joined);
+        currentSpots--;
+        currentAttendees++;
+      }
+      renderBtn();
+      renderSpots();
+      renderAttendees();
+      updateNavBadge();
     });
 
-    document.getElementById('rsvp-btn').addEventListener('click', function() {
-      this.textContent = "You're in! 🎉";
-      this.style.opacity = '0.7';
-      this.disabled = true;
-    });
+    // ── My Groups nav badge ──
+    function updateNavBadge() {
+      var count = getJoined().length;
+      var nav = document.getElementById('nav-mygroups');
+      nav.textContent = count > 0 ? 'My Groups (' + count + ')' : 'My Groups';
+    }
+    updateNavBadge();
 
+    // ── Discussion ──
     function sendMsg() {
       var input = document.getElementById('msg-input');
       if (!input.value.trim()) return;
       var msgBox = document.getElementById('msg-box');
-      msgBox.style.display = 'block';
       msgBox.textContent = 'You: ' + input.value;
       msgBox.style.color = '#141414';
       msgBox.style.fontSize = '15px';
       input.value = '';
     }
+
+    document.getElementById('msg-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') sendMsg();
+    });
   </script>
 </body>
 </html>

@@ -14,6 +14,7 @@
       <nav class="nav-center">
         <a class="nav-link active" href="HomePage.html">Feed</a>
         <a class="nav-link" href="ExplorePage.html">Explore Map</a>
+        <a class="nav-link" href="MyGroupsPage.html" id="nav-mygroups">My Groups</a>
       </nav>
 
       <div class="topbar-actions">
@@ -146,6 +147,11 @@
     <div id="no-results" style="display:none; text-align:center; padding:60px 20px; color:#787878; font-size:16px;">
       No sessions match this filter right now.
     </div>
+
+  </div>
+    <div id="no-results" style="display:none; text-align:center; padding:60px 20px; color:#787878; font-size:16px;">
+      No sessions match this filter right now.
+    </div>
   </div>
 
   <script src="auth.js"></script>
@@ -186,6 +192,29 @@
       });
 
       document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+    }
+        // ── Show joined badge on cards where user has joined ──
+    var joined = JSON.parse(localStorage.getItem('joinedGroups') || '[]');
+    joined.forEach(function(id) {
+      var card = document.querySelector('[data-id="' + id + '"] .session-card');
+      if (!card) return;
+      var footer = card.querySelector('.card-footer');
+      // Remove existing badge if any
+      var old = footer.querySelector('.joined-badge');
+      if (old) old.remove();
+      var badge = document.createElement('span');
+      badge.className = 'joined-badge';
+      badge.innerHTML = '✓ Joined';
+      // Insert before spots span
+      var spots = footer.querySelector('.spots');
+      footer.insertBefore(badge, spots);
+      spots.style.display = 'none';
+    });
+
+    // ── Update My Groups nav badge ──
+    if (joined.length > 0) {
+      var navLink = document.getElementById('nav-mygroups');
+      navLink.textContent = 'My Groups (' + joined.length + ')';
     }
   </script>
 </body>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Nomad - My Groups</title>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <a href="HomePage.html" class="brand">Study Nomad</a>
+
+      <nav class="nav-center">
+        <a class="nav-link" href="HomePage.html">Feed</a>
+        <a class="nav-link" href="ExplorePage.html">Explore Map</a>
+        <a class="nav-link active" href="MyGroupsPage.html" id="nav-mygroups">My Groups</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <button class="host-btn">+ Host a Session</button>
+        <div class="avatar">S</div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1>My Groups</h1>
+      <p>Sessions you have joined.</p>
+      <hr class="hero-divider" />
+    </section>
+
+    <!-- Filled by JS -->
+    <div id="page-content"></div>
+
+  </div>
+
+  <script>
+    var allSessions = {
+      1: {
+        tag: 'COMP 401',
+        time: 'Tomorrow, 5:00 PM',
+        title: 'COMP 401 Midterm Review Hackathon',
+        location: 'UNIC Main Library, 3rd Floor',
+        spots: 2,
+        total: 6,
+        description: 'We are going to power through the last 3 years of past exams. Bring snacks and your notes so we can review everything together.',
+        avatars: [
+          { initials: 'N', color: 'blue' },
+          { initials: 'T', color: 'green' },
+          { initials: 'H', color: 'yellow' },
+          { initials: 'K', color: 'purple' }
+        ]
+      },
+      2: {
+        tag: 'COMP 328',
+        time: 'Thursday, 2:00 PM',
+        title: 'UI/UX Figma Collaboration',
+        location: 'Student Union Cafe (Near the window)',
+        spots: 2,
+        total: 4,
+        description: 'Working on our final project design. If anyone is good at setting up Figma auto-layout, please come help us out.',
+        avatars: [
+          { initials: 'A', color: 'red' },
+          { initials: 'I', color: 'pink' }
+        ]
+      },
+      3: {
+        tag: 'COMP 413',
+        time: 'Saturday, 10:00 AM',
+        title: 'Database Normalization Study Group',
+        location: 'Engineering Building, Room 104',
+        spots: 3,
+        total: 8,
+        description: 'Going over BCNF and 3NF reductions. I have a whiteboard marker, and we will do practice examples together.',
+        avatars: [
+          { initials: 'H',  color: 'yellow' },
+          { initials: 'A',  color: 'blue' },
+          { initials: 'S',  color: 'teal' },
+          { initials: 'M',  color: 'pink' },
+          { initials: '+1', color: 'gray' }
+        ]
+      }
+    };
+
+    function getJoined() {
+      return JSON.parse(localStorage.getItem('joinedGroups') || '[]');
+    }
+    function saveJoined(arr) {
+      localStorage.setItem('joinedGroups', JSON.stringify(arr));
+    }
+
+    function leaveGroup(id) {
+      var joined = getJoined().filter(function(x) { return x !== id; });
+      saveJoined(joined);
+      render(); // re-render the page
+    }
+
+    function render() {
+      var joined = getJoined();
+      var content = document.getElementById('page-content');
+
+      // Update nav badge
+      var nav = document.getElementById('nav-mygroups');
+      nav.textContent = joined.length > 0 ? 'My Groups (' + joined.length + ')' : 'My Groups';
+
+      if (joined.length === 0) {
+        content.innerHTML =
+          '<div class="mygroups-empty">' +
+            '<h2>You haven\'t joined any sessions yet.</h2>' +
+            '<p>Browse the feed and hit <strong>Join Group</strong> on any session that interests you.</p>' +
+            '<a href="HomePage.html">Browse Sessions</a>' +
+          '</div>';
+        return;
+      }
+
+      var gridHTML = '<div class="mygroups-grid">';
+
+      joined.forEach(function(id) {
+        var s = allSessions[id];
+        if (!s) return;
+
+        var avatarHTML = s.avatars.map(function(a) {
+          return '<div class="mini-avatar ' + a.color + '">' + a.initials + '</div>';
+        }).join('');
+
+        // User has joined so spots are -1
+        var adjustedSpots = s.spots - 1;
+
+        gridHTML +=
+          '<div class="session-card" style="position:relative;">' +
+            '<div class="session-top">' +
+              '<span class="tag">' + s.tag + '</span>' +
+              '<span class="time">' + s.time + '</span>' +
+            '</div>' +
+            '<h2 class="session-title">' + s.title + '</h2>' +
+            '<div class="location">' +
+              '<span class="location-icon"></span>' +
+              '<span>' + s.location + '</span>' +
+            '</div>' +
+            '<p class="description">' + s.description + '</p>' +
+            '<hr class="card-divider" />' +
+            '<div class="card-footer">' +
+              '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
+                '<div class="avatars">' + avatarHTML + '</div>' +
+                '<span class="joined-badge">✓ Joined</span>' +
+              '</div>' +
+              '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">' +
+                '<a href="SessionDetail.html?id=' + id + '" style="font-size:13px;font-weight:600;color:#141414;">View →</a>' +
+                '<button class="leave-btn" onclick="leaveGroup(' + id + ')">Leave</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+      });
+
+      gridHTML += '</div>';
+      content.innerHTML = gridHTML;
+    }
+
+    render();
+  </script>
+</body>
+</html>
