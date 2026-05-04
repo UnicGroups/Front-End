@@ -5,158 +5,108 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Study Nomad - My Groups</title>
-</head>
-<body>
-  <div class="container">
-    <header class="topbar">
-      <a href="HomePage.html" class="brand">Study Nomad</a>
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <a href="HomePage.html" class="brand">Study Nomad</a>
+        <nav class="nav-center">
+          <a class="nav-link" href="HomePage.html">Feed</a>
+          <a class="nav-link" href="ExplorePage.html">Explore Map</a>
+          <a class="nav-link active" href="MyGroupsPage.html" id="nav-mygroups">My Groups</a>
+        </nav>
+        <div class="topbar-actions">
+          <button class="host-btn">+ Host a Session</button>
+          <div class="avatar" role="button" tabindex="0">S</div>
+        </div>
+      </header>
 
-      <nav class="nav-center">
-        <a class="nav-link" href="HomePage.html">Feed</a>
-        <a class="nav-link" href="ExplorePage.html">Explore Map</a>
-        <a class="nav-link active" href="MyGroupsPage.html" id="nav-mygroups">My Groups</a>
-      </nav>
+      <section class="hero">
+        <h1>My Groups</h1>
+        <p>Sessions you have joined or hosted.</p>
+        <hr class="hero-divider" />
+      </section>
 
-      <div class="topbar-actions">
-        <button class="host-btn">+ Host a Session</button>
-        <div class="avatar">S</div>
-      </div>
-    </header>
+      <div id="page-content"></div>
+    </div>
 
-    <section class="hero">
-      <h1>My Groups</h1>
-      <p>Sessions you have joined.</p>
-      <hr class="hero-divider" />
-    </section>
-
-    <!-- Filled by JS -->
-    <div id="page-content"></div>
-
-  </div>
-
-  <script>
-    var allSessions = {
-      1: {
-        tag: 'COMP 401',
-        time: 'Tomorrow, 5:00 PM',
-        title: 'COMP 401 Midterm Review Hackathon',
-        location: 'UNIC Main Library, 3rd Floor',
-        spots: 2,
-        total: 6,
-        description: 'We are going to power through the last 3 years of past exams. Bring snacks and your notes so we can review everything together.',
-        avatars: [
-          { initials: 'N', color: 'blue' },
-          { initials: 'T', color: 'green' },
-          { initials: 'H', color: 'yellow' },
-          { initials: 'K', color: 'purple' }
-        ]
-      },
-      2: {
-        tag: 'COMP 328',
-        time: 'Thursday, 2:00 PM',
-        title: 'UI/UX Figma Collaboration',
-        location: 'Student Union Cafe (Near the window)',
-        spots: 2,
-        total: 4,
-        description: 'Working on our final project design. If anyone is good at setting up Figma auto-layout, please come help us out.',
-        avatars: [
-          { initials: 'A', color: 'red' },
-          { initials: 'I', color: 'pink' }
-        ]
-      },
-      3: {
-        tag: 'COMP 413',
-        time: 'Saturday, 10:00 AM',
-        title: 'Database Normalization Study Group',
-        location: 'Engineering Building, Room 104',
-        spots: 3,
-        total: 8,
-        description: 'Going over BCNF and 3NF reductions. I have a whiteboard marker, and we will do practice examples together.',
-        avatars: [
-          { initials: 'H',  color: 'yellow' },
-          { initials: 'A',  color: 'blue' },
-          { initials: 'S',  color: 'teal' },
-          { initials: 'M',  color: 'pink' },
-          { initials: '+1', color: 'gray' }
-        ]
-      }
-    };
-
-    function getJoined() {
-      return JSON.parse(localStorage.getItem('joinedGroups') || '[]');
-    }
-    function saveJoined(arr) {
-      localStorage.setItem('joinedGroups', JSON.stringify(arr));
-    }
-
-    function leaveGroup(id) {
-      var joined = getJoined().filter(function(x) { return x !== id; });
-      saveJoined(joined);
-      render(); // re-render the page
-    }
-
-    function render() {
-      var joined = getJoined();
-      var content = document.getElementById('page-content');
-
-      // Update nav badge
-      var nav = document.getElementById('nav-mygroups');
-      nav.textContent = joined.length > 0 ? 'My Groups (' + joined.length + ')' : 'My Groups';
-
-      if (joined.length === 0) {
-        content.innerHTML =
-          '<div class="mygroups-empty">' +
-            '<h2>You haven\'t joined any sessions yet.</h2>' +
-            '<p>Browse the feed and hit <strong>Join Group</strong> on any session that interests you.</p>' +
-            '<a href="HomePage.html">Browse Sessions</a>' +
-          '</div>';
-        return;
+    <script src="auth.js"></script>
+    <script>
+      function leaveGroup(id) {
+        var joined = window.StudyNomad.getJoined().filter(function(x) { return x !== id; });
+        window.StudyNomad.setJoined(joined);
+        render();
       }
 
-      var gridHTML = '<div class="mygroups-grid">';
-
-      joined.forEach(function(id) {
-        var s = allSessions[id];
-        if (!s) return;
-
-        var avatarHTML = s.avatars.map(function(a) {
+      function cardHtml(s) {
+        var user = window.StudyNomad.getCurrentUser();
+        var isOwner = user && ((s.createdByEmail && s.createdByEmail === user.email) || (s.hostName && s.hostName === user.name));
+        var ownerActions = isOwner ? '<button class="leave-btn" onclick="deleteHostedSession(' + s.id + ')">Delete</button>' : '';
+        var avatarHTML = (s.attendees || []).slice(0, 5).map(function(a) {
           return '<div class="mini-avatar ' + a.color + '">' + a.initials + '</div>';
         }).join('');
-
-        // User has joined so spots are -1
-        var adjustedSpots = s.spots - 1;
-
-        gridHTML +=
+        return (
           '<div class="session-card" style="position:relative;">' +
-            '<div class="session-top">' +
-              '<span class="tag">' + s.tag + '</span>' +
-              '<span class="time">' + s.time + '</span>' +
-            '</div>' +
+            '<div class="session-top"><span class="tag">' + s.tag + '</span><span class="time">' + s.time + '</span></div>' +
             '<h2 class="session-title">' + s.title + '</h2>' +
-            '<div class="location">' +
-              '<span class="location-icon"></span>' +
-              '<span>' + s.location + '</span>' +
-            '</div>' +
-            '<p class="description">' + s.description + '</p>' +
+            '<div class="location"><span class="location-icon"></span><span>' + s.location + '</span></div>' +
+            '<p class="description">' + (s.description || s.about || '') + '</p>' +
             '<hr class="card-divider" />' +
             '<div class="card-footer">' +
-              '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
-                '<div class="avatars">' + avatarHTML + '</div>' +
-                '<span class="joined-badge">✓ Joined</span>' +
-              '</div>' +
-              '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">' +
-                '<a href="SessionDetail.html?id=' + id + '" style="font-size:13px;font-weight:600;color:#141414;">View →</a>' +
-                '<button class="leave-btn" onclick="leaveGroup(' + id + ')">Leave</button>' +
-              '</div>' +
+              '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><div class="avatars">' + avatarHTML + '</div><span class="joined-badge">Joined</span></div>' +
+              '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;"><a href="SessionDetail.html?id=' + s.id + '" style="font-size:13px;font-weight:600;color:#141414;">View -></a><button class="leave-btn" onclick="leaveGroup(' + s.id + ')">Leave</button>' + ownerActions + '</div>' +
             '</div>' +
-          '</div>';
-      });
+          '</div>'
+        );
+      }
 
-      gridHTML += '</div>';
-      content.innerHTML = gridHTML;
-    }
+      function deleteHostedSession(id) {
+        if (!confirm('Delete this hosted session?')) return;
+        var res = window.StudyNomad.deleteSession(id);
+        if (!res.ok) {
+          alert(res.error || 'Could not delete session.');
+          return;
+        }
+        render();
+      }
 
-    render();
-  </script>
-</body>
+      function render() {
+        var user = window.StudyNomad.getCurrentUser();
+        var content = document.getElementById('page-content');
+        if (!user) {
+          content.innerHTML = '<div class="mygroups-empty"><h2>Login required</h2><p>Please log in to see your groups.</p><a href="#" id="open-login-link">Log in / Sign up</a></div>';
+          document.getElementById('open-login-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.StudyNomad.openLogin();
+          });
+          return;
+        }
+
+        var sessions = window.StudyNomad.getSessions();
+        var joinedIds = window.StudyNomad.getJoined();
+        var list = sessions.filter(function(s) {
+          var sid = Number(s.id);
+          var joinedMatch = joinedIds.map(Number).indexOf(sid) > -1;
+          var hostedByYou = (s.createdByEmail && s.createdByEmail === user.email) || (s.hostName && s.hostName === user.name);
+          return joinedMatch || hostedByYou;
+        });
+
+        if (!list.length) {
+          content.innerHTML = '<div class="mygroups-empty"><h2>You have not joined any sessions yet.</h2><p>Open the feed and join any session you like.</p><a href="HomePage.html">Browse Sessions</a></div>';
+          return;
+        }
+
+        content.innerHTML = '<div class="mygroups-grid">' + list.map(cardHtml).join('') + '</div>';
+      }
+
+      function boot() {
+        window.addEventListener('sn:sessions-updated', render);
+        window.addEventListener('sn:auth-changed', render);
+        render();
+      }
+
+      if (window.StudyNomad) boot();
+      else window.addEventListener('sn:ready', boot, { once: true });
+    </script>
+  </body>
 </html>

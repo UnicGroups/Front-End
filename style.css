@@ -707,6 +707,59 @@ img {
   line-height: 1.5;
 }
 
+.joined-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #ecf7ef;
+  color: #1f8a41;
+  border: 1px solid #cfead7;
+}
+
+.leave-btn {
+  border: 1px solid #e5c8c8;
+  background: #fff5f5;
+  color: #a53636;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mygroups-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.mygroups-empty {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 32px;
+}
+
+.mygroups-empty h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.mygroups-empty p {
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.mygroups-empty a {
+  font-weight: 700;
+}
+
 /* =========================
    RESPONSIVE
 ========================= */

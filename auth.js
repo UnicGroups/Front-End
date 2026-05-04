@@ -1,37 +1,181 @@
-// Lightweight client-side auth mock that stores users in localStorage
-// and lets the user download an updated `password` file after sign up.
-
+// Shared auth + session store for all pages.
 (function() {
-  const STORAGE_KEY = 'sn_users_v1';
-  const CURRENT_KEY = 'sn_current_user_v1';
+  const USERS_KEY = 'sn_users_v1';
+  const CURRENT_USER_KEY = 'sn_current_user_v1';
+  const SESSIONS_KEY = 'sn_sessions_v1';
+  const JOINED_KEY = 'joinedGroups';
   const PASSWORD_FILENAME = 'password';
-  let currentUser = null;
-  let menuEl = null;
-  let modalEl = null;
-  let usersCache = [];
 
-  const defaultUsers = [
-    { email: 'admin', name: 'admin', password: 'password' }
+  const defaultUsers = [{ email: 'admin', name: 'admin', password: 'password' }];
+  const defaultSessions = [
+    {
+      id: 1,
+      tag: 'COMP 401',
+      title: 'COMP 401 Midterm Review Hackathon',
+      location: 'UNIC Main Library, 3rd Floor',
+      time: 'Tomorrow, 5:00 PM',
+      about: 'We are going to power through the last 3 years of past exams together.',
+      description: 'We are going to power through the last 3 years of past exams. Bring snacks and your notes so we can review everything together.',
+      spots: 2,
+      total: 6,
+      lat: 35.16325,
+      lng: 33.31396,
+      color: '#4a7cff',
+      hostName: 'Nedim C.',
+      day: 'tomorrow',
+      dist: 'near',
+      mine: true,
+      attendees: [
+        { initials: 'N', color: 'blue', name: 'Nedim C.', role: 'Host' },
+        { initials: 'T', color: 'green', name: 'Timur S.', role: 'Attendee' },
+        { initials: 'H', color: 'yellow', name: 'Hussein K.', role: 'Attendee' },
+        { initials: 'K', color: 'purple', name: 'Kumru A.', role: 'Attendee' }
+      ]
+    },
+    {
+      id: 2,
+      tag: 'COMP 328',
+      title: 'UI/UX Figma Collaboration',
+      location: 'Student Union Cafe (Near the window)',
+      time: 'Thursday, 2:00 PM',
+      about: 'Working on our final project design system in Figma.',
+      description: 'Working on our final project design. If anyone is good at setting up Figma auto-layout, please come help us out.',
+      spots: 2,
+      total: 4,
+      lat: 35.1598,
+      lng: 33.3268,
+      color: '#e548a6',
+      hostName: 'Aisha M.',
+      day: 'thursday',
+      dist: 'near',
+      mine: false,
+      attendees: [
+        { initials: 'A', color: 'red', name: 'Aisha M.', role: 'Host' },
+        { initials: 'I', color: 'pink', name: 'Illia B.', role: 'Attendee' }
+      ]
+    },
+    {
+      id: 3,
+      tag: 'COMP 413',
+      title: 'Database Normalization Study Group',
+      location: 'Engineering Building, Room 104',
+      time: 'Saturday, 10:00 AM',
+      about: 'Going over BCNF and 3NF reductions with worked examples on the whiteboard.',
+      description: 'Going over BCNF and 3NF reductions. I have a whiteboard marker, and we will do practice examples together.',
+      spots: 3,
+      total: 8,
+      lat: 35.1551,
+      lng: 33.3092,
+      color: '#25b36a',
+      hostName: 'Hussein K.',
+      day: 'saturday',
+      dist: 'near',
+      mine: true,
+      attendees: [
+        { initials: 'H', color: 'yellow', name: 'Hussein K.', role: 'Host' },
+        { initials: 'A', color: 'blue', name: 'Aisha M.', role: 'Attendee' },
+        { initials: 'S', color: 'teal', name: 'Sara L.', role: 'Attendee' },
+        { initials: 'M', color: 'pink', name: 'Mia T.', role: 'Attendee' }
+      ]
+    }
   ];
 
-  function serialize(users) {
-    // blank line between user blocks
-    return users.map(u => `${u.email}\n${u.name}\n${u.password}`).join('\n\n');
+  const avatarColorPool = ['blue', 'green', 'yellow', 'purple', 'red', 'pink', 'teal'];
+  let currentUser = null;
+  let users = [];
+  let authModal = null;
+  let profileMenu = null;
+  let hostModal = null;
+
+  function initialsFromName(name) {
+    const v = (name || '').trim();
+    return v ? v.charAt(0).toUpperCase() : 'S';
   }
 
-  function parse(text) {
+  function colorFromName(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) % 1000;
+    return avatarColorPool[Math.abs(hash) % avatarColorPool.length];
+  }
+
+  function serializeUsers(list) {
+    return list.map(u => `${u.email}\n${u.name}\n${u.password}`).join('\n\n');
+  }
+
+  function parseUsers(text) {
     const lines = text.split(/\r?\n/).filter(Boolean);
-    const users = [];
+    const out = [];
     for (let i = 0; i + 2 < lines.length; i += 3) {
-      users.push({ email: lines[i], name: lines[i + 1], password: lines[i + 2] });
+      out.push({ email: lines[i], name: lines[i + 1], password: lines[i + 2] });
     }
-    return users;
+    return out;
   }
 
-  function saveUsers(users) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+  function getJoined() {
+    const raw = JSON.parse(localStorage.getItem(JOINED_KEY) || '[]');
+    const normalized = Array.from(new Set(raw.map(function(v) { return Number(v); }).filter(function(v) {
+      return Number.isFinite(v) && v > 0;
+    })));
+    localStorage.setItem(JOINED_KEY, JSON.stringify(normalized));
+    return normalized;
+  }
+
+  function setJoined(value) {
+    localStorage.setItem(JOINED_KEY, JSON.stringify(value));
+  }
+
+  function getSessions() {
+    const raw = localStorage.getItem(SESSIONS_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        let nextId = 1;
+        const normalized = parsed.map(function(s) {
+          let sid = Number(s.id);
+          if (!Number.isFinite(sid) || sid <= 0) sid = nextId;
+          nextId = Math.max(nextId, sid + 1);
+          return {
+            ...s,
+            id: sid,
+            spots: Number(s.spots),
+            total: Number(s.total),
+            lat: typeof s.lat === 'number' ? s.lat : Number(s.lat),
+            lng: typeof s.lng === 'number' ? s.lng : Number(s.lng)
+          };
+        });
+        const byId = {};
+        normalized.forEach(function(s) {
+          if (!byId[s.id]) byId[s.id] = s;
+        });
+        const deduped = Object.keys(byId).map(function(k) { return byId[k]; }).sort(function(a, b) { return a.id - b.id; });
+        const repaired = deduped.map(function(s, idx) {
+          return { ...s, id: idx + 1 };
+        });
+        // Remap joined ids if ids were repaired
+        const oldToNew = {};
+        deduped.forEach(function(s, idx) { oldToNew[s.id] = idx + 1; });
+        const joined = getJoined();
+        const remappedJoined = Array.from(new Set(joined.map(function(id) { return oldToNew[id] || id; }).filter(function(v) {
+          return Number.isFinite(v) && v > 0;
+        })));
+        setJoined(remappedJoined);
+        localStorage.setItem(SESSIONS_KEY, JSON.stringify(repaired));
+        return repaired;
+      } catch (_) {}
+    }
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(defaultSessions));
+    return defaultSessions.slice();
+  }
+
+  function saveSessions(list) {
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(list));
+    window.dispatchEvent(new CustomEvent('sn:sessions-updated'));
+  }
+
+  function saveUsers(list) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(list));
     try {
-      const blob = new Blob([serialize(users)], { type: 'text/plain' });
+      const blob = new Blob([serializeUsers(list)], { type: 'text/plain' });
       const a = document.createElement('a');
       a.download = PASSWORD_FILENAME;
       a.href = URL.createObjectURL(blob);
@@ -40,123 +184,87 @@
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
       a.remove();
-    } catch (e) {
-      console.warn('Could not trigger password file download', e);
-    }
+    } catch (_) {}
   }
 
   async function loadUsers() {
-    const fromLs = localStorage.getItem(STORAGE_KEY);
-    if (fromLs) {
-      try { return JSON.parse(fromLs); } catch { /* fallthrough */ }
+    const local = localStorage.getItem(USERS_KEY);
+    if (local) {
+      try { return JSON.parse(local); } catch (_) {}
     }
-
     try {
       const res = await fetch(PASSWORD_FILENAME);
       if (res.ok) {
-        const text = await res.text();
-        const parsed = parse(text);
+        const parsed = parseUsers(await res.text());
         if (parsed.length) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+          localStorage.setItem(USERS_KEY, JSON.stringify(parsed));
           return parsed;
         }
       }
-    } catch (e) {
-      console.warn('Could not read password file, using defaults.', e);
-    }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUsers));
+    } catch (_) {}
+    localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
     return defaultUsers.slice();
+  }
+
+  function getCurrentUser() {
+    const raw = localStorage.getItem(CURRENT_USER_KEY);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch (_) { return null; }
   }
 
   function setCurrentUser(user) {
     currentUser = user;
-    localStorage.setItem(CURRENT_KEY, JSON.stringify(user));
-    updateAvatar(user);
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    updateAvatar();
+    window.dispatchEvent(new CustomEvent('sn:auth-changed', { detail: { user } }));
   }
 
-  function getCurrentUser() {
-    const raw = localStorage.getItem(CURRENT_KEY);
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
+  function logout() {
+    localStorage.removeItem(CURRENT_USER_KEY);
+    currentUser = null;
+    updateAvatar();
+    closeProfileMenu();
+    openAuthModal('login');
+    window.dispatchEvent(new CustomEvent('sn:auth-changed', { detail: { user: null } }));
   }
 
-  function toggleMenu(anchor) {
-    if (!menuEl) return;
-    const open = menuEl.classList.contains('open');
-    if (open) {
-      menuEl.classList.remove('open');
-      return;
-    }
-    const rect = anchor.getBoundingClientRect();
-    menuEl.style.top = `${rect.bottom + 8}px`;
-    menuEl.style.left = `${Math.max(rect.right - 220, 12)}px`;
-    menuEl.classList.add('open');
-  }
-
-  function closeMenu() {
-    if (menuEl) menuEl.classList.remove('open');
-  }
-
-  function attachMenu(user) {
-    if (menuEl) {
-      menuEl.querySelector('[data-name]').textContent = user.name;
-      menuEl.querySelector('[data-email]').textContent = user.email;
-      return;
-    }
-    menuEl = document.createElement('div');
-    menuEl.className = 'auth-menu';
-    menuEl.innerHTML = `
-      <h4 data-name></h4>
-      <small data-email></small>
-      <button type="button">Profile</button>
-      <button type="button">Settings</button>
-      <button type="button" class="logout">Log out</button>
-    `;
-    document.body.appendChild(menuEl);
-    menuEl.querySelector('.logout').addEventListener('click', () => {
-      localStorage.removeItem(CURRENT_KEY);
-      currentUser = null;
-      updateAvatar(null);
-      closeMenu();
-      if (modalEl) openModal(modalEl, 'login');
-    });
-    // other buttons are inert per requirements
-    menuEl.addEventListener('click', (e) => e.stopPropagation());
-  }
-
-  function updateAvatar(user) {
+  function updateAvatar() {
     const avatar = document.querySelector('.avatar');
     if (!avatar) return;
-    const letter = user && user.name ? user.name.trim().charAt(0).toUpperCase() : 'S';
-    avatar.textContent = letter;
-    avatar.title = user ? user.name : 'Sign in';
+    avatar.textContent = initialsFromName(currentUser ? currentUser.name : 'S');
+    avatar.title = currentUser ? currentUser.name : 'Sign in';
   }
 
-  function closeModal(modal) {
-    modal.classList.remove('open');
+  function closeAuthModal() {
+    if (authModal) authModal.classList.remove('open');
   }
 
-  function openModal(modal, mode) {
-    modal.classList.add('open');
-    switchMode(modal, mode || 'login');
+  function switchAuthMode(mode) {
+    if (!authModal) return;
+    authModal.setAttribute('data-mode', mode);
+    const label = authModal.querySelector('[data-mode-label]');
+    const nameField = authModal.querySelector('.name-field');
+    const error = authModal.querySelector('.auth-error');
+    if (label) label.textContent = mode === 'login' ? 'Log in' : 'Sign up';
+    if (nameField) nameField.style.display = mode === 'signup' ? 'block' : 'none';
+    if (error) error.textContent = '';
   }
 
-  function switchMode(modal, mode) {
-    modal.setAttribute('data-mode', mode);
-    modal.querySelector('[data-mode-label]').textContent = mode === 'login' ? 'Log in' : 'Sign up';
-    modal.querySelector('.name-field').style.display = mode === 'signup' ? 'block' : 'none';
-    modal.querySelector('.auth-error').textContent = '';
+  function openAuthModal(mode) {
+    if (!authModal) return;
+    closeProfileMenu();
+    authModal.classList.add('open');
+    switchAuthMode(mode || 'login');
   }
 
-  function initModal(users) {
-    if (document.querySelector('.auth-overlay')) return { modal: document.querySelector('.auth-overlay'), users };
-
-    const overlay = document.createElement('div');
-    overlay.className = 'auth-overlay';
-    overlay.innerHTML = `
+  function ensureAuthModal() {
+    if (authModal) return;
+    authModal = document.createElement('div');
+    authModal.className = 'auth-overlay';
+    authModal.setAttribute('data-mode', 'login');
+    authModal.innerHTML = `
       <div class="auth-modal">
-        <button class="auth-close" aria-label="Close">×</button>
+        <button class="auth-close" aria-label="Close">x</button>
         <div class="auth-tabs">
           <button class="auth-tab" data-tab="login">Log in</button>
           <button class="auth-tab" data-tab="signup">Sign up</button>
@@ -167,98 +275,283 @@
           <input type="email" class="auth-email" placeholder="you@example.com" required>
         </label>
         <label class="auth-field name-field" style="display:none;">Full name
-          <input type="text" class="auth-name" placeholder="Full name" autocomplete="name">
+          <input type="text" class="auth-name" placeholder="Name Surname">
         </label>
         <label class="auth-field">Password
           <input type="password" class="auth-pass" placeholder="Password" required>
         </label>
         <button class="auth-primary">Continue</button>
-        <p class="auth-note">Accounts are stored locally only. After sign up a file called "password" will download with your credentials.</p>
       </div>`;
+    document.body.appendChild(authModal);
 
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(overlay); });
-    overlay.querySelector('.auth-close').addEventListener('click', () => closeModal(overlay));
-
-    overlay.querySelectorAll('.auth-tab').forEach(btn => {
-      btn.addEventListener('click', () => switchMode(overlay, btn.dataset.tab));
+    authModal.addEventListener('click', e => {
+      if (e.target === authModal) closeAuthModal();
     });
+    authModal.querySelector('.auth-close').addEventListener('click', closeAuthModal);
+    authModal.querySelectorAll('.auth-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchAuthMode(btn.dataset.tab));
+    });
+    authModal.querySelector('.auth-primary').addEventListener('click', () => {
+      const mode = authModal.getAttribute('data-mode');
+      const email = authModal.querySelector('.auth-email').value.trim();
+      const password = authModal.querySelector('.auth-pass').value;
+      const name = authModal.querySelector('.auth-name').value.trim();
+      const error = authModal.querySelector('.auth-error');
+      error.textContent = '';
 
-    overlay.querySelector('.auth-primary').addEventListener('click', () => {
-      const mode = overlay.getAttribute('data-mode');
-      const email = overlay.querySelector('.auth-email').value.trim();
-      const pass = overlay.querySelector('.auth-pass').value;
-      const name = overlay.querySelector('.auth-name').value.trim();
-      const errorEl = overlay.querySelector('.auth-error');
-      errorEl.textContent = '';
-
-      if (!email || !pass || (mode === 'signup' && !name)) {
-        errorEl.textContent = 'Please fill in all required fields.';
+      if (!email || !password || (mode === 'signup' && !name)) {
+        error.textContent = 'Please fill in all required fields.';
         return;
       }
 
       if (mode === 'signup') {
         if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-          errorEl.textContent = 'User already exists. Try logging in instead.';
+          error.textContent = 'User already exists. Please log in.';
           return;
         }
-        const user = { email, name, password: pass };
+        const user = { email, name, password };
         users.push(user);
         saveUsers(users);
         setCurrentUser(user);
-        attachMenu(user);
-        closeModal(overlay);
+        closeAuthModal();
         return;
       }
 
-      // login
-      const found = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === pass);
+      const found = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
       if (!found) {
-        errorEl.textContent = 'Invalid email or password.';
+        error.textContent = 'Invalid email or password.';
         return;
       }
       setCurrentUser(found);
-      attachMenu(found);
-      closeModal(overlay);
+      closeAuthModal();
     });
-
-    document.body.appendChild(overlay);
-    return { modal: overlay, users };
   }
 
-  async function initAuth() {
-    const users = await loadUsers();
-    usersCache = users;
-    const { modal } = initModal(users);
-    modalEl = modal;
-    const current = getCurrentUser();
-    currentUser = current;
-    updateAvatar(current);
-    if (current) attachMenu(current);
+  function closeProfileMenu() {
+    if (profileMenu) profileMenu.classList.remove('open');
+  }
 
-    const avatarBtn = document.querySelector('.avatar');
-    if (avatarBtn) {
-      avatarBtn.addEventListener('click', (e) => {
+  function ensureProfileMenu() {
+    if (profileMenu) return;
+    profileMenu = document.createElement('div');
+    profileMenu.className = 'auth-menu';
+    profileMenu.innerHTML = `
+      <h4 data-name></h4>
+      <small data-email></small>
+      <button type="button">Profile</button>
+      <button type="button">Settings</button>
+      <button type="button" class="logout">Log out</button>
+    `;
+    document.body.appendChild(profileMenu);
+    profileMenu.querySelector('.logout').addEventListener('click', logout);
+    profileMenu.addEventListener('click', e => e.stopPropagation());
+  }
+
+  function openProfileMenu(anchor) {
+    if (!currentUser) return;
+    ensureProfileMenu();
+    profileMenu.querySelector('[data-name]').textContent = currentUser.name;
+    profileMenu.querySelector('[data-email]').textContent = currentUser.email;
+    const rect = anchor.getBoundingClientRect();
+    profileMenu.style.top = `${rect.bottom + 8}px`;
+    profileMenu.style.left = `${Math.max(rect.right - 220, 12)}px`;
+    profileMenu.classList.add('open');
+  }
+
+  function closeHostModal() {
+    if (hostModal) hostModal.classList.remove('open');
+  }
+
+  function ensureHostModal() {
+    if (hostModal) return;
+    hostModal = document.createElement('div');
+    hostModal.className = 'auth-overlay';
+    hostModal.innerHTML = `
+      <div class="auth-modal">
+        <button class="auth-close" aria-label="Close">x</button>
+        <h3>Host a Session</h3>
+        <div class="auth-error host-error" aria-live="polite"></div>
+        <label class="auth-field">Course Tag
+          <input type="text" id="host-tag" placeholder="COMP 401">
+        </label>
+        <label class="auth-field">Session Title
+          <input type="text" id="host-title" placeholder="Midterm Review">
+        </label>
+        <label class="auth-field">Time
+          <input type="text" id="host-time" placeholder="Friday, 4:00 PM">
+        </label>
+        <label class="auth-field">Location
+          <input type="text" id="host-location" placeholder="Library, 2nd floor">
+        </label>
+        <label class="auth-field">Latitude
+          <input type="number" id="host-lat" step="0.000001" placeholder="35.160000">
+        </label>
+        <label class="auth-field">Longitude
+          <input type="number" id="host-lng" step="0.000001" placeholder="33.320000">
+        </label>
+        <label class="auth-field">Total Spots
+          <input type="number" id="host-total" min="1" value="6">
+        </label>
+        <label class="auth-field">About This Session
+          <input type="text" id="host-about" placeholder="What will you study?">
+        </label>
+        <button class="auth-primary" id="host-submit">Create Session</button>
+      </div>`;
+    document.body.appendChild(hostModal);
+
+    hostModal.addEventListener('click', e => {
+      if (e.target === hostModal) closeHostModal();
+    });
+    hostModal.querySelector('.auth-close').addEventListener('click', closeHostModal);
+    hostModal.querySelector('#host-submit').addEventListener('click', () => {
+      const err = hostModal.querySelector('.host-error');
+      const tag = hostModal.querySelector('#host-tag').value.trim();
+      const title = hostModal.querySelector('#host-title').value.trim();
+      const time = hostModal.querySelector('#host-time').value.trim();
+      const location = hostModal.querySelector('#host-location').value.trim();
+      const lat = parseFloat(hostModal.querySelector('#host-lat').value);
+      const lng = parseFloat(hostModal.querySelector('#host-lng').value);
+      const total = parseInt(hostModal.querySelector('#host-total').value, 10);
+      const about = hostModal.querySelector('#host-about').value.trim();
+      err.textContent = '';
+
+      if (!currentUser) {
+        err.textContent = 'Please log in first.';
+        return;
+      }
+      if (!tag || !title || !time || !location || !about || Number.isNaN(lat) || Number.isNaN(lng) || !total || total < 1) {
+        err.textContent = 'Please fill all fields correctly.';
+        return;
+      }
+
+      const sessions = getSessions();
+      const id = sessions.reduce(function(max, s) {
+        const sid = Number(s.id);
+        return Math.max(max, Number.isFinite(sid) ? sid : 0);
+      }, 0) + 1;
+      const hostInitial = initialsFromName(currentUser.name);
+      const hostColor = colorFromName(currentUser.name);
+      const created = {
+        id,
+        tag,
+        title,
+        location,
+        time,
+        about,
+        description: about,
+        spots: total - 1,
+        total,
+        lat,
+        lng,
+        color: '#0f0f10',
+        hostName: currentUser.name,
+        createdByEmail: currentUser.email,
+        day: 'today',
+        dist: 'near',
+        mine: true,
+        attendees: [
+          { initials: hostInitial, color: hostColor, name: currentUser.name, role: 'Host' }
+        ]
+      };
+      sessions.push(created);
+      saveSessions(sessions);
+
+      const joined = getJoined();
+      if (!joined.includes(Number(id))) {
+        joined.push(id);
+        setJoined(joined);
+      }
+      closeHostModal();
+      window.dispatchEvent(new CustomEvent('sn:host-created', { detail: { sessionId: id } }));
+    });
+  }
+
+  function requireLogin() {
+    if (currentUser) return true;
+    openAuthModal('login');
+    return false;
+  }
+
+  function bindHeaderActions() {
+    const avatar = document.querySelector('.avatar');
+    if (avatar) {
+      avatar.setAttribute('role', 'button');
+      avatar.setAttribute('tabindex', '0');
+      avatar.addEventListener('click', e => {
         e.stopPropagation();
-        if (currentUser) {
-          toggleMenu(avatarBtn);
-        } else {
-          openModal(modal, 'login');
+        if (!currentUser) openAuthModal('login');
+        else {
+          if (profileMenu && profileMenu.classList.contains('open')) closeProfileMenu();
+          else openProfileMenu(avatar);
         }
       });
-      avatarBtn.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          if (currentUser) toggleMenu(avatarBtn); else openModal(modal, 'login');
-        }
+      avatar.addEventListener('keypress', e => {
+        if (e.key === 'Enter') avatar.click();
       });
     }
 
-    document.addEventListener('click', closeMenu);
+    document.querySelectorAll('.host-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!requireLogin()) return;
+        ensureHostModal();
+        closeProfileMenu();
+        hostModal.classList.add('open');
+      });
+    });
+
+    document.addEventListener('click', closeProfileMenu);
   }
 
-  // auto-run after DOM is ready
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(initAuth, 0);
+  function updateMyGroupsBadge() {
+    const joined = getJoined();
+    document.querySelectorAll('#nav-mygroups').forEach(el => {
+      el.textContent = joined.length > 0 ? `My Groups (${joined.length})` : 'My Groups';
+    });
+  }
+
+  async function init() {
+    users = await loadUsers();
+    currentUser = getCurrentUser();
+    ensureAuthModal();
+    ensureProfileMenu();
+    bindHeaderActions();
+    updateAvatar();
+    updateMyGroupsBadge();
+    window.addEventListener('sn:sessions-updated', updateMyGroupsBadge);
+    window.addEventListener('sn:auth-changed', updateMyGroupsBadge);
+
+    window.StudyNomad = {
+      getCurrentUser: () => currentUser,
+      requireLogin,
+      openLogin: () => openAuthModal('login'),
+      getSessions,
+      saveSessions,
+      deleteSession: function(sessionId) {
+        const user = currentUser;
+        if (!user) return { ok: false, error: 'Login required' };
+        const id = Number(sessionId);
+        const sessions = getSessions();
+        const target = sessions.find(function(s) { return Number(s.id) === id; });
+        if (!target) return { ok: false, error: 'Session not found' };
+        const isOwner = (target.createdByEmail && target.createdByEmail === user.email) || (target.hostName && target.hostName === user.name);
+        if (!isOwner) return { ok: false, error: 'Only host can delete this session' };
+        const next = sessions.filter(function(s) { return Number(s.id) !== id; });
+        saveSessions(next);
+        const joined = getJoined().filter(function(j) { return Number(j) !== id; });
+        setJoined(joined);
+        return { ok: true };
+      },
+      getJoined,
+      setJoined,
+      initialsFromName,
+      colorFromName
+    };
+    window.dispatchEvent(new CustomEvent('sn:ready'));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    document.addEventListener('DOMContentLoaded', initAuth);
+    init();
   }
 })();
