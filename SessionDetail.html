@@ -5,239 +5,176 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Study Nomad - Session Detail</title>
-</head>
-<body>
-  <div class="container">
-    <header class="topbar">
-      <a href="HomePage.html" class="brand">Study Nomad</a>
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <a href="HomePage.html" class="brand">Study Nomad</a>
+        <nav class="nav-center">
+          <a class="nav-link active" href="HomePage.html">Feed</a>
+          <a class="nav-link" href="ExplorePage.html">Explore Map</a>
+          <a class="nav-link" href="MyGroupsPage.html" id="nav-mygroups">My Groups</a>
+        </nav>
+        <div class="topbar-actions">
+          <button class="host-btn">+ Host a Session</button>
+          <div class="avatar" role="button" tabindex="0">S</div>
+        </div>
+      </header>
 
-      <nav class="nav-center">
-        <a class="nav-link active" href="HomePage.html">Feed</a>
-        <a class="nav-link" href="ExplorePage.html">Explore Map</a>
-        <a class="nav-link" href="MyGroupsPage.html" id="nav-mygroups">My Groups</a>
-      </nav>
-
-      <div class="topbar-actions">
-        <button class="host-btn">+ Host a Session</button>
-        <div class="avatar">S</div>
-      </div>
-    </header>
-
-    <div class="session-details-page">
-      <a class="back-link" href="HomePage.html">← Back to Feed</a>
-
-      <div class="session-hero-card">
-        <div class="session-main-info">
-          <span class="tag" id="d-tag"></span>
-          <h1 id="d-title"></h1>
-          <div class="session-meta">
-            <div id="d-time"></div>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-              <span class="location-icon"></span>
-              <span id="d-location"></span>
+      <div class="session-details-page">
+        <a class="back-link" href="HomePage.html">Back to Feed</a>
+        <div class="session-hero-card">
+          <div class="session-main-info">
+            <span class="tag" id="d-tag"></span>
+            <h1 id="d-title"></h1>
+            <div class="session-meta">
+              <div id="d-time"></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                <span class="location-icon"></span>
+                <span id="d-location"></span>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="session-side-box">
-          <h2 id="d-spots"></h2>
-          <p id="d-spots-label"></p>
-          <button class="rsvp-btn" id="join-btn"></button>
-        </div>
-      </div>
-
-      <div class="session-section">
-        <h2>About this session</h2>
-        <p id="d-about"></p>
-      </div>
-
-      <div class="session-bottom-grid">
-        <div class="session-section">
-          <h2>Discussion</h2>
-          <div class="message-box" id="msg-box">No messages yet — be the first to say something!</div>
-          <div class="message-form">
-            <input type="text" id="msg-input" placeholder="Say something to the group…" />
-            <button onclick="sendMsg()">Send</button>
+          <div class="session-side-box">
+            <h2 id="d-spots"></h2>
+            <p id="d-spots-label"></p>
+            <button class="rsvp-btn" id="join-btn"></button>
+            <button class="leave-btn" id="delete-btn" style="margin-top:10px;display:none;width:100%;">Delete Session</button>
           </div>
         </div>
 
-        <div class="session-section attendees-box" id="attendees-box">
-          <h2 id="d-attendees-heading"></h2>
+        <div class="session-section">
+          <h2>About this session</h2>
+          <p id="d-about"></p>
+        </div>
+
+        <div class="session-bottom-grid">
+          <div class="session-section">
+            <h2>Discussion</h2>
+            <div class="message-box" id="msg-box">No messages yet - be the first to say something!</div>
+            <div class="message-form">
+              <input type="text" id="msg-input" placeholder="Say something to the group..." />
+              <button onclick="sendMsg()">Send</button>
+            </div>
+          </div>
+
+          <div class="session-section attendees-box" id="attendees-box">
+            <h2 id="d-attendees-heading"></h2>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    var sessions = {
-      1: {
-        tag: 'COMP 401',
-        time: 'Tomorrow, 5:00 PM',
-        title: 'COMP 401 Midterm Review Hackathon',
-        location: 'UNIC Main Library, 3rd Floor',
-        spots: 2,
-        total: 6,
-        about: 'We are going to power through the last 3 years of past exams together. Bring snacks, printed notes, and your laptop. We will split into smaller groups for each topic and reconvene to go over tricky questions. Everyone is welcome — even if you feel behind, this is exactly the session for you.',
-        attendees: [
-          { initials: 'N', color: 'blue',   name: 'Nedim C.',   role: 'Host' },
-          { initials: 'T', color: 'green',  name: 'Timur S.',   role: 'Attendee' },
-          { initials: 'H', color: 'yellow', name: 'Hussein K.', role: 'Attendee' },
-          { initials: 'K', color: 'purple', name: 'Kumru A.',   role: 'Attendee' }
-        ]
-      },
-      2: {
-        tag: 'COMP 328',
-        time: 'Thursday, 2:00 PM',
-        title: 'UI/UX Figma Collaboration',
-        location: 'Student Union Cafe (Near the window)',
-        spots: 2,
-        total: 4,
-        about: 'Working on our final project design system in Figma. We need someone comfortable with auto-layout and component variants. We will also be reviewing user-flow diagrams and finalising the colour palette. Figma access required — reach out if you need an invite to the team file.',
-        attendees: [
-          { initials: 'A', color: 'red',  name: 'Aisha M.',  role: 'Host' },
-          { initials: 'I', color: 'pink', name: 'Illia B.',  role: 'Attendee' }
-        ]
-      },
-      3: {
-        tag: 'COMP 413',
-        time: 'Saturday, 10:00 AM',
-        title: 'Database Normalization Study Group',
-        location: 'Engineering Building, Room 104',
-        spots: 3,
-        total: 8,
-        about: 'Going over BCNF and 3NF reductions with worked examples on the whiteboard. We will tackle past exam questions and build intuition for spotting functional dependencies quickly. Whiteboard markers provided — just bring yourself and a willingness to get things wrong a few times before getting them right.',
-        attendees: [
-          { initials: 'H',  color: 'yellow', name: 'Hussein K.', role: 'Host' },
-          { initials: 'A',  color: 'blue',   name: 'Aisha M.',   role: 'Attendee' },
-          { initials: 'S',  color: 'teal',   name: 'Sara L.',    role: 'Attendee' },
-          { initials: 'M',  color: 'pink',   name: 'Mia T.',     role: 'Attendee' },
-          { initials: '+1', color: 'gray',   name: '1 more',     role: 'Attendee' }
-        ]
+    <script src="auth.js"></script>
+    <script>
+      var sendMsg = function() {};
+
+      function boot() {
+        var id = parseInt(new URLSearchParams(window.location.search).get('id'), 10) || 1;
+        var sessions = window.StudyNomad.getSessions();
+        var session = sessions.find(function(s) { return Number(s.id) === Number(id); }) || sessions[0];
+        var joined = window.StudyNomad.getJoined();
+        var user = window.StudyNomad.getCurrentUser();
+
+        if (!session) {
+          window.location.href = 'HomePage.html';
+          return;
+        }
+
+        function isJoined() { return joined.indexOf(session.id) > -1; }
+        function spotsLeft() { return session.spots - (isJoined() ? 1 : 0); }
+        function attendeesCount() { return session.total - session.spots + (isJoined() ? 1 : 0); }
+
+        document.title = 'Study Nomad - ' + session.title;
+        document.getElementById('d-tag').textContent = session.tag;
+        document.getElementById('d-title').textContent = session.title;
+        document.getElementById('d-time').textContent = session.time;
+        document.getElementById('d-location').textContent = session.location;
+        document.getElementById('d-about').textContent = session.about || session.description || '';
+
+        function renderHeaderStats() {
+          document.getElementById('d-spots').textContent = spotsLeft();
+          document.getElementById('d-spots-label').textContent = 'spots left out of ' + session.total;
+          document.getElementById('d-attendees-heading').textContent = 'Attendees (' + attendeesCount() + ')';
+        }
+
+        function renderAttendees() {
+          var box = document.getElementById('attendees-box');
+          box.querySelectorAll('.attendee-item').forEach(function(el) { el.remove(); });
+          (session.attendees || []).forEach(function(a) {
+            var item = document.createElement('div');
+            item.className = 'attendee-item';
+            item.innerHTML = '<div class="mini-avatar ' + a.color + '" style="width:38px;height:38px;font-size:13px;flex-shrink:0;">' + a.initials + '</div><div><strong>' + a.name + '</strong><p>' + a.role + '</p></div>';
+            box.appendChild(item);
+          });
+          if (isJoined() && user) {
+            var i = window.StudyNomad.initialsFromName(user.name);
+            var c = window.StudyNomad.colorFromName(user.name);
+            var you = document.createElement('div');
+            you.className = 'attendee-item';
+            you.innerHTML = '<div class="mini-avatar ' + c + '" style="width:38px;height:38px;font-size:13px;flex-shrink:0;">' + i + '</div><div><strong>' + user.name + '</strong><p>Attendee</p></div>';
+            box.appendChild(you);
+          }
+        }
+
+        function renderJoinBtn() {
+          var btn = document.getElementById('join-btn');
+          var delBtn = document.getElementById('delete-btn');
+          var isOwner = user && ((session.createdByEmail && session.createdByEmail === user.email) || (session.hostName && session.hostName === user.name));
+          delBtn.style.display = isOwner ? 'block' : 'none';
+          if (isJoined()) {
+            btn.textContent = 'Leave Group';
+            btn.disabled = false;
+            return;
+          }
+          btn.textContent = spotsLeft() <= 0 ? 'Session Full' : 'Join Group';
+          btn.disabled = spotsLeft() <= 0;
+        }
+
+        document.getElementById('join-btn').addEventListener('click', function() {
+          if (!window.StudyNomad.requireLogin()) return;
+          user = window.StudyNomad.getCurrentUser();
+          if (isJoined()) joined = joined.filter(function(x) { return x !== session.id; });
+          else {
+            if (spotsLeft() <= 0) return;
+            joined.push(session.id);
+          }
+          window.StudyNomad.setJoined(joined);
+          renderJoinBtn();
+          renderHeaderStats();
+          renderAttendees();
+        });
+
+        document.getElementById('delete-btn').addEventListener('click', function() {
+          if (!confirm('Delete this hosted session?')) return;
+          var res = window.StudyNomad.deleteSession(session.id);
+          if (!res.ok) {
+            alert(res.error || 'Could not delete session.');
+            return;
+          }
+          window.location.href = 'HomePage.html';
+        });
+
+        sendMsg = function() {
+          var input = document.getElementById('msg-input');
+          if (!input.value.trim()) return;
+          var msg = document.getElementById('msg-box');
+          msg.textContent = 'You: ' + input.value;
+          msg.style.color = '#141414';
+          input.value = '';
+        };
+
+        document.getElementById('msg-input').addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') sendMsg();
+        });
+
+        renderHeaderStats();
+        renderAttendees();
+        renderJoinBtn();
       }
-    };
 
-    var id = parseInt(new URLSearchParams(window.location.search).get('id')) || 1;
-    var s = sessions[id] || sessions[1];
-
-    // ── localStorage helpers ──
-    function getJoined() {
-      return JSON.parse(localStorage.getItem('joinedGroups') || '[]');
-    }
-    function saveJoined(arr) {
-      localStorage.setItem('joinedGroups', JSON.stringify(arr));
-    }
-    function isJoined() {
-      return getJoined().indexOf(id) > -1;
-    }
-
-    // ── Compute current spots (adjusted if user has joined) ──
-    var currentSpots = isJoined() ? s.spots - 1 : s.spots;
-    var currentAttendees = isJoined() ? (s.total - s.spots + 1) : (s.total - s.spots);
-
-    // ── Render static content ──
-    document.title = 'Study Nomad - ' + s.title;
-    document.getElementById('d-tag').textContent        = s.tag;
-    document.getElementById('d-title').textContent      = s.title;
-    document.getElementById('d-time').textContent       = s.time;
-    document.getElementById('d-location').textContent   = s.location;
-    document.getElementById('d-about').textContent      = s.about;
-
-    // ── Render spots ──
-    function renderSpots() {
-      document.getElementById('d-spots').textContent      = currentSpots;
-      document.getElementById('d-spots-label').textContent = 'spots left out of ' + s.total;
-      document.getElementById('d-attendees-heading').textContent = 'Attendees (' + currentAttendees + ')';
-    }
-    renderSpots();
-
-    // ── Render attendees ──
-    var box = document.getElementById('attendees-box');
-    function renderAttendees() {
-      // Clear existing attendee items (keep the heading)
-      var existing = box.querySelectorAll('.attendee-item');
-      existing.forEach(function(el) { el.remove(); });
-
-      s.attendees.forEach(function(a) {
-        var item = document.createElement('div');
-        item.className = 'attendee-item';
-        item.innerHTML =
-          '<div class="mini-avatar ' + a.color + '" style="width:38px;height:38px;font-size:13px;flex-shrink:0;">' + a.initials + '</div>' +
-          '<div><strong>' + a.name + '</strong><p>' + a.role + '</p></div>';
-        box.appendChild(item);
-      });
-
-      // If user joined, add "You" at the bottom
-      if (isJoined()) {
-        var you = document.createElement('div');
-        you.className = 'attendee-item';
-        you.id = 'you-attendee';
-        you.innerHTML =
-          '<div class="mini-avatar teal" style="width:38px;height:38px;font-size:13px;flex-shrink:0;">S</div>' +
-          '<div><strong>You (S)</strong><p>Attendee</p></div>';
-        box.appendChild(you);
-      }
-    }
-    renderAttendees();
-
-    // ── Join / Leave button ──
-    var btn = document.getElementById('join-btn');
-
-    function renderBtn() {
-      if (isJoined()) {
-        btn.textContent = 'Leave Group';
-        btn.classList.add('joined');
-      } else {
-        btn.textContent = currentSpots <= 0 ? 'Session Full' : 'Join Group';
-        btn.classList.remove('joined');
-        btn.disabled = currentSpots <= 0;
-      }
-    }
-    renderBtn();
-
-    btn.addEventListener('click', function() {
-      var joined = getJoined();
-      if (isJoined()) {
-        // Leave
-        joined = joined.filter(function(x) { return x !== id; });
-        saveJoined(joined);
-        currentSpots++;
-        currentAttendees--;
-      } else {
-        // Join
-        if (currentSpots <= 0) return;
-        joined.push(id);
-        saveJoined(joined);
-        currentSpots--;
-        currentAttendees++;
-      }
-      renderBtn();
-      renderSpots();
-      renderAttendees();
-      updateNavBadge();
-    });
-
-    // ── My Groups nav badge ──
-    function updateNavBadge() {
-      var count = getJoined().length;
-      var nav = document.getElementById('nav-mygroups');
-      nav.textContent = count > 0 ? 'My Groups (' + count + ')' : 'My Groups';
-    }
-    updateNavBadge();
-
-    // ── Discussion ──
-    function sendMsg() {
-      var input = document.getElementById('msg-input');
-      if (!input.value.trim()) return;
-      var msgBox = document.getElementById('msg-box');
-      msgBox.textContent = 'You: ' + input.value;
-      msgBox.style.color = '#141414';
-      msgBox.style.fontSize = '15px';
-      input.value = '';
-    }
-
-    document.getElementById('msg-input').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') sendMsg();
-    });
-  </script>
-</body>
+      if (window.StudyNomad) boot();
+      else window.addEventListener('sn:ready', boot, { once: true });
+    </script>
+  </body>
 </html>
