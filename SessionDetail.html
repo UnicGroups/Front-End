@@ -81,9 +81,12 @@
           return;
         }
 
-        function isJoined() { return joined.indexOf(session.id) > -1; }
-        function spotsLeft() { return session.spots - (isJoined() ? 1 : 0); }
-        function attendeesCount() { return session.total - session.spots + (isJoined() ? 1 : 0); }
+        function isHost() {
+          return !!(user && ((session.createdByEmail && session.createdByEmail === user.email) || (session.hostName && session.hostName === user.name)));
+        }
+        function isJoined() { return joined.map(Number).indexOf(Number(session.id)) > -1; }
+        function spotsLeft() { return session.spots - (isJoined() && !isHost() ? 1 : 0); }
+        function attendeesCount() { return session.total - session.spots + (isJoined() && !isHost() ? 1 : 0); }
 
         document.title = 'Study Nomad - ' + session.title;
         document.getElementById('d-tag').textContent = session.tag;
@@ -107,7 +110,7 @@
             item.innerHTML = '<div class="mini-avatar ' + a.color + '" style="width:38px;height:38px;font-size:13px;flex-shrink:0;">' + a.initials + '</div><div><strong>' + a.name + '</strong><p>' + a.role + '</p></div>';
             box.appendChild(item);
           });
-          if (isJoined() && user) {
+          if (isJoined() && !isHost() && user) {
             var i = window.StudyNomad.initialsFromName(user.name);
             var c = window.StudyNomad.colorFromName(user.name);
             var you = document.createElement('div');
@@ -120,8 +123,13 @@
         function renderJoinBtn() {
           var btn = document.getElementById('join-btn');
           var delBtn = document.getElementById('delete-btn');
-          var isOwner = user && ((session.createdByEmail && session.createdByEmail === user.email) || (session.hostName && session.hostName === user.name));
+          var isOwner = isHost();
           delBtn.style.display = isOwner ? 'block' : 'none';
+          if (isOwner) {
+            btn.textContent = 'You are Host';
+            btn.disabled = true;
+            return;
+          }
           if (isJoined()) {
             btn.textContent = 'Leave Group';
             btn.disabled = false;

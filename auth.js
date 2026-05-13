@@ -86,6 +86,9 @@
   let authModal = null;
   let profileMenu = null;
   let hostModal = null;
+  let mapPickerModal = null;
+  let mapPickerState = { lat: null, lng: null };
+  let leafletPromise = null;
 
   function initialsFromName(name) {
     const v = (name || '').trim();
@@ -139,8 +142,8 @@
             id: sid,
             spots: Number(s.spots),
             total: Number(s.total),
-            lat: typeof s.lat === 'number' ? s.lat : Number(s.lat),
-            lng: typeof s.lng === 'number' ? s.lng : Number(s.lng)
+            lat: (s.lat === null || s.lat === undefined || s.lat === '') ? null : (typeof s.lat === 'number' ? s.lat : Number(s.lat)),
+            lng: (s.lng === null || s.lng === undefined || s.lng === '') ? null : (typeof s.lng === 'number' ? s.lng : Number(s.lng))
           };
         });
         const byId = {};
@@ -362,6 +365,105 @@
     if (hostModal) hostModal.classList.remove('open');
   }
 
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve(window.L);
+    if (leafletPromise) return leafletPromise;
+    leafletPromise = new Promise(function(resolve, reject) {
+      const hasCss = document.querySelector('link[data-sn-leaflet="1"]');
+      if (!hasCss) {
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        css.setAttribute('data-sn-leaflet', '1');
+        document.head.appendChild(css);
+      }
+      const existing = document.querySelector('script[data-sn-leaflet="1"]');
+      if (existing) {
+        existing.addEventListener('load', function() { resolve(window.L); });
+        existing.addEventListener('error', reject);
+        return;
+      }
+      const js = document.createElement('script');
+      js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      js.setAttribute('data-sn-leaflet', '1');
+      js.onload = function() { resolve(window.L); };
+      js.onerror = reject;
+      document.body.appendChild(js);
+    });
+    return leafletPromise;
+  }
+
+  function closeMapPicker() {
+    if (mapPickerModal) mapPickerModal.classList.remove('open');
+  }
+
+  function ensureMapPickerModal() {
+    if (mapPickerModal) return;
+    mapPickerModal = document.createElement('div');
+    mapPickerModal.className = 'auth-overlay';
+    mapPickerModal.innerHTML = `
+      <div class="auth-modal map-picker-modal">
+        <button class="auth-close" aria-label="Close">x</button>
+        <h3>Select Point on Map (Optional)</h3>
+        <div class="auth-note">Click anywhere on the map to set a point, then press Save Point.</div>
+        <div id="host-map-picker" style="height:320px;border:1px solid #e8e8e8;border-radius:12px;"></div>
+        <div style="display:flex;gap:10px;">
+          <button class="auth-primary" id="save-map-point">Save Point</button>
+          <button class="auth-tab" id="clear-map-point" type="button">Clear Point</button>
+        </div>
+      </div>`;
+    document.body.appendChild(mapPickerModal);
+
+    mapPickerModal.addEventListener('click', function(e) {
+      if (e.target === mapPickerModal) closeMapPicker();
+    });
+    mapPickerModal.querySelector('.auth-close').addEventListener('click', closeMapPicker);
+    mapPickerModal.querySelector('#save-map-point').addEventListener('click', function() {
+      const preview = hostModal ? hostModal.querySelector('#host-map-preview') : null;
+      if (preview) {
+        preview.textContent = (mapPickerState.lat != null && mapPickerState.lng != null)
+          ? ('Point selected: ' + mapPickerState.lat.toFixed(5) + ', ' + mapPickerState.lng.toFixed(5))
+          : 'No point selected';
+      }
+      closeMapPicker();
+    });
+    mapPickerModal.querySelector('#clear-map-point').addEventListener('click', function() {
+      mapPickerState = { lat: null, lng: null };
+      const preview = hostModal ? hostModal.querySelector('#host-map-preview') : null;
+      if (preview) preview.textContent = 'No point selected';
+      closeMapPicker();
+    });
+  }
+
+  async function openMapPicker() {
+    ensureMapPickerModal();
+    mapPickerModal.classList.add('open');
+    const L = await loadLeaflet();
+    const mount = mapPickerModal.querySelector('#host-map-picker');
+    if (!mount) return;
+
+    mount.innerHTML = '';
+    const center = (mapPickerState.lat != null && mapPickerState.lng != null)
+      ? [mapPickerState.lat, mapPickerState.lng]
+      : [35.159, 33.318];
+    const map = L.map(mount, { zoomControl: true }).setView(center, 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    let marker = null;
+    if (mapPickerState.lat != null && mapPickerState.lng != null) {
+      marker = L.marker([mapPickerState.lat, mapPickerState.lng]).addTo(map);
+    }
+    map.on('click', function(e) {
+      mapPickerState = { lat: e.latlng.lat, lng: e.latlng.lng };
+      if (marker) marker.remove();
+      marker = L.marker([mapPickerState.lat, mapPickerState.lng]).addTo(map);
+    });
+    setTimeout(function() { map.invalidateSize(); }, 30);
+  }
+
   function ensureHostModal() {
     if (hostModal) return;
     hostModal = document.createElement('div');
@@ -383,12 +485,8 @@
         <label class="auth-field">Location
           <input type="text" id="host-location" placeholder="Library, 2nd floor">
         </label>
-        <label class="auth-field">Latitude
-          <input type="number" id="host-lat" step="0.000001" placeholder="35.160000">
-        </label>
-        <label class="auth-field">Longitude
-          <input type="number" id="host-lng" step="0.000001" placeholder="33.320000">
-        </label>
+        <button class="auth-tab" id="host-map-btn" type="button">Show on map (optional)</button>
+        <div class="auth-note" id="host-map-preview">No point selected</div>
         <label class="auth-field">Total Spots
           <input type="number" id="host-total" min="1" value="6">
         </label>
@@ -403,14 +501,20 @@
       if (e.target === hostModal) closeHostModal();
     });
     hostModal.querySelector('.auth-close').addEventListener('click', closeHostModal);
+    hostModal.querySelector('#host-map-btn').addEventListener('click', function() {
+      openMapPicker().catch(function() {
+        const err = hostModal.querySelector('.host-error');
+        err.textContent = 'Could not load map. You can still create session without map point.';
+      });
+    });
     hostModal.querySelector('#host-submit').addEventListener('click', () => {
       const err = hostModal.querySelector('.host-error');
       const tag = hostModal.querySelector('#host-tag').value.trim();
       const title = hostModal.querySelector('#host-title').value.trim();
       const time = hostModal.querySelector('#host-time').value.trim();
       const location = hostModal.querySelector('#host-location').value.trim();
-      const lat = parseFloat(hostModal.querySelector('#host-lat').value);
-      const lng = parseFloat(hostModal.querySelector('#host-lng').value);
+      const lat = mapPickerState.lat;
+      const lng = mapPickerState.lng;
       const total = parseInt(hostModal.querySelector('#host-total').value, 10);
       const about = hostModal.querySelector('#host-about').value.trim();
       err.textContent = '';
@@ -419,7 +523,7 @@
         err.textContent = 'Please log in first.';
         return;
       }
-      if (!tag || !title || !time || !location || !about || Number.isNaN(lat) || Number.isNaN(lng) || !total || total < 1) {
+      if (!tag || !title || !time || !location || !about || !total || total < 1) {
         err.textContent = 'Please fill all fields correctly.';
         return;
       }
@@ -441,8 +545,8 @@
         description: about,
         spots: total - 1,
         total,
-        lat,
-        lng,
+        lat: typeof lat === 'number' ? lat : null,
+        lng: typeof lng === 'number' ? lng : null,
         color: '#0f0f10',
         hostName: currentUser.name,
         createdByEmail: currentUser.email,
@@ -456,12 +560,10 @@
       sessions.push(created);
       saveSessions(sessions);
 
-      const joined = getJoined();
-      if (!joined.includes(Number(id))) {
-        joined.push(id);
-        setJoined(joined);
-      }
+      // Do not auto-join host as attendee.
       closeHostModal();
+      mapPickerState = { lat: null, lng: null };
+      hostModal.querySelector('#host-map-preview').textContent = 'No point selected';
       window.dispatchEvent(new CustomEvent('sn:host-created', { detail: { sessionId: id } }));
     });
   }
@@ -504,8 +606,17 @@
 
   function updateMyGroupsBadge() {
     const joined = getJoined();
+    const sessions = getSessions();
+    const hosted = currentUser
+      ? sessions
+          .filter(function(s) {
+            return (s.createdByEmail && s.createdByEmail === currentUser.email) || (s.hostName && s.hostName === currentUser.name);
+          })
+          .map(function(s) { return Number(s.id); })
+      : [];
+    const total = Array.from(new Set(joined.concat(hosted))).length;
     document.querySelectorAll('#nav-mygroups').forEach(el => {
-      el.textContent = joined.length > 0 ? `My Groups (${joined.length})` : 'My Groups';
+      el.textContent = total > 0 ? `My Groups (${total})` : 'My Groups';
     });
   }
 
